@@ -6,77 +6,147 @@ const os = require('os');
 cmd({
     pattern: 'menu',
     alias: ['help', 'cmds', 'commands'],
-    desc: 'Show all commands by category',
+    desc: 'Ultra stylish command menu',
     category: 'general',
     react: '📋'
-}, async (conn, mek, m, { from, sender, isOwner, reply }) => {
+}, async (conn, mek, m, { from, sender, reply }) => {
+
     try {
+
         const number = sender.split('@')[0];
         const userConfig = await getUserConfigFromMongoDB(number);
 
-        // Group commands by category
+        // Group Commands
         const categories = {};
-        for (const cmd of commands) {
-            if (cmd.dontAddCommandList) continue;
-            const cat = (cmd.category || 'misc').toLowerCase();
+
+        for (const command of commands) {
+
+            if (command.dontAddCommandList) continue;
+
+            const cat = (command.category || 'misc').toLowerCase();
+
             if (!categories[cat]) categories[cat] = [];
-            categories[cat].push(cmd);
+
+            categories[cat].push(command);
         }
 
+        // Emojis
         const categoryEmojis = {
             general: '🌐',
             group: '👥',
             settings: '⚙️',
             owner: '👑',
-            tools: '🔧',
+            tools: '🛠️',
             fun: '🎭',
             media: '🎬',
             misc: '📦'
         };
 
-        const uptime = process.uptime();
-        const hours = Math.floor(uptime / 3600);
-        const minutes = Math.floor((uptime % 3600) / 60);
-        const seconds = Math.floor(uptime % 60);
+        // Runtime
+        const runtime = process.uptime();
 
-        let menuText = `╭──────────────────────◇\n`;
-        menuText += `│  *🤖 INCONNU BOY — MENU*\n`;
-        menuText += `│──────────────────────\n`;
-        menuText += `│ 👤 User: ${m.pushName || 'User'}\n`;
-        menuText += `│ ⚡ Prefix: [ ${config.PREFIX} ]\n`;
-        menuText += `│ 🕐 Uptime: ${hours}h ${minutes}m ${seconds}s\n`;
-        menuText += `│ 🔌 Mode: ${config.WORK_TYPE || 'public'}\n`;
-        menuText += `│──────────────────────\n`;
-        menuText += `│ ⚙️ Settings Status\n`;
-        menuText += `│ 👁️ Auto View: ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}\n`;
-        menuText += `│ 📵 Anti Call: ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}\n`;
-        menuText += `│ 🎙️ Auto Record: ${userConfig.AUTO_RECORDING === 'true' ? 'ON ✅' : 'OFF ❌'}\n`;
-        menuText += `│ ⌨️ Auto Typing: ${userConfig.AUTO_TYPING === 'true' ? 'ON ✅' : 'OFF ❌'}\n`;
-        menuText += `│ ✅ Auto Read: ${userConfig.READ_MESSAGE === 'true' ? 'ON ✅' : 'OFF ❌'}\n`;
-        menuText += `╰──────────────────────◇\n\n`;
+        const hours = Math.floor(runtime / 3600);
+        const minutes = Math.floor((runtime % 3600) / 60);
+        const seconds = Math.floor(runtime % 60);
 
-        // List commands per category
-        const catOrder = ['general', 'group', 'settings', 'owner', 'tools', 'fun', 'media', 'misc'];
-        const sortedCats = [...catOrder.filter(c => categories[c]), ...Object.keys(categories).filter(c => !catOrder.includes(c))];
+        // RAM
+        const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
+        const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
 
+        // Total Commands
+        const totalCommands = commands.filter(c => !c.dontAddCommandList).length;
+
+        // Date
+        const date = new Date().toLocaleDateString();
+        const time = new Date().toLocaleTimeString();
+
+        let menu = `
+╔═══━━━─── • ───━━━═══╗
+     *HOSTIFY AI MINI*
+╚═══━━━─── • ───━━━═══╝
+
+┏━━━━━━━━━━━━━━━━━━⬣
+┃ 👤 User : ${m.pushName || 'User'}
+┃ ⚡ Prefix : ${config.PREFIX}
+┃ 🌐 Mode : ${config.WORK_TYPE || 'public'}
+┃ 📦 Commands : ${totalCommands}
+┃ 🕐 Runtime : ${hours}h ${minutes}m ${seconds}s
+┃ 💾 RAM : ${freeMem}GB / ${totalMem}GB
+┃ 📅 Date : ${date}
+┃ ⏰ Time : ${time}
+┗━━━━━━━━━━━━━━━━━━⬣
+
+╔═══━━━〔 ⚙️ SETTINGS 〕━━━═══╗
+┃ 👁️ Auto View : ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃ 📵 Anti Call : ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃ 🎙️ Auto Record : ${userConfig.AUTO_RECORDING === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃ ⌨️ Auto Typing : ${userConfig.AUTO_TYPING === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃ ✅ Auto Read : ${userConfig.READ_MESSAGE === 'true' ? 'ON ✅' : 'OFF ❌'}
+╚══════════════════════╝
+`;
+
+        // Order
+        const catOrder = [
+            'general',
+            'group',
+            'settings',
+            'owner',
+            'tools',
+            'fun',
+            'media',
+            'misc'
+        ];
+
+        const sortedCats = [
+            ...catOrder.filter(c => categories[c]),
+            ...Object.keys(categories).filter(c => !catOrder.includes(c))
+        ];
+
+        // Categories
         for (const cat of sortedCats) {
-            if (!categories[cat] || !categories[cat].length) continue;
+
+            if (!categories[cat]?.length) continue;
+
             const emoji = categoryEmojis[cat] || '📦';
-            menuText += `╭─── ${emoji} *${cat.toUpperCase()}* ───\n`;
+
+            menu += `
+
+╭━━━〔 ${emoji} ${cat.toUpperCase()} 〕━━━⬣
+`;
+
+            let count = 1;
+
             for (const c of categories[cat]) {
-                menuText += `│ ${config.PREFIX}${c.pattern}${c.desc ? ' — ' + c.desc : ''}\n`;
+
+                menu += `┃ ${String(count).padStart(2, '0')} ✦ ${config.PREFIX}${c.pattern}\n`;
+
+                count++;
             }
-            menuText += `╰────────────────────◇\n\n`;
+
+            menu += `╰━━━━━━━━━━━━━━━━━━⬣
+`;
         }
 
-        menuText += `> *© Powered by INCONNU BOY*`;
+        menu += `
 
-        await conn.sendMessage(from, {
-            image: { url: config.IMAGE_PATH },
-            caption: menuText
-        }, { quoted: mek });
+╔═══━━━─── • ───━━━═══╗
+ 💎 whatsbot.hostify.co.zw 
+╚═══━━━─── • ───━━━═══╝
+
+> © 2026 FREE WHATSBOT
+`;
+
+        await conn.sendMessage(
+            from,
+            {
+                image: { url: config.IMAGE_PATH },
+                caption: menu
+            },
+            { quoted: mek }
+        );
 
     } catch (e) {
-        reply('*❌ Menu error: ' + e.message + '*');
+
+        reply(`❌ Menu Error : ${e.message}`);
     }
 });
