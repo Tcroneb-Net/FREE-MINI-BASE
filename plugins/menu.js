@@ -6,7 +6,7 @@ const os = require('os');
 cmd({
     pattern: 'menu',
     alias: ['help', 'cmds', 'commands'],
-    desc: 'Ultra stylish command menu',
+    desc: 'Ultra Plus Stylish Menu',
     category: 'general',
     react: '📋'
 }, async (conn, mek, m, { from, sender, reply }) => {
@@ -30,7 +30,7 @@ cmd({
             categories[cat].push(command);
         }
 
-        // Emojis
+        // Category Emojis
         const categoryEmojis = {
             general: '🌐',
             group: '👥',
@@ -53,39 +53,65 @@ cmd({
         const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
         const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
 
+        // CPU
+        const cpuModel = os.cpus()[0].model;
+
         // Total Commands
         const totalCommands = commands.filter(c => !c.dontAddCommandList).length;
 
-        // Date
-        const date = new Date().toLocaleDateString();
-        const time = new Date().toLocaleTimeString();
+        // Date & Time
+        const now = new Date();
 
+        const date = now.toLocaleDateString();
+        const time = now.toLocaleTimeString();
+
+        // Greeting
+        const hour = now.getHours();
+
+        let greeting = '🌙 Good Night';
+
+        if (hour >= 5 && hour < 12) greeting = '🌅 Good Morning';
+        else if (hour >= 12 && hour < 17) greeting = '☀️ Good Afternoon';
+        else if (hour >= 17 && hour < 21) greeting = '🌇 Good Evening';
+
+        // Menu Start
         let menu = `
-╔═━━❮*HOSTIFY AI MINI*❯━═╗
-    *◇ FREE WHATSBOT ◇*
-╚═══━━━─── • ───━━━═══╝
+╭━━━〔 🤖 HOSTIFY AI MINI 〕━━━⬣
+┃ ✨ FREE WHATSBOT SYSTEM
+┃ ${greeting}
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
-┏━━━━━━━━━━━━━━━━━━⬣
-┃ 👤 User : ${m.pushName || 'User'}
-┃ ⚡ Prefix : ${config.PREFIX}
-┃ 🌐 Mode : ${config.WORK_TYPE || 'public'}
-┃ 📦 Commands : ${totalCommands}
-┃ 🕐 Runtime : ${hours}h ${minutes}m ${seconds}s
+┏━━━━━━━━━━━━━━━━━━━━┓
+┃ 👤 USER : ${m.pushName || 'User'}
+┃ ⚡ PREFIX : ${config.PREFIX}
+┃ 🌐 MODE : ${config.WORK_TYPE || 'public'}
+┃ 📦 COMMANDS : ${totalCommands}
+┃ 🕐 RUNTIME : ${hours}h ${minutes}m ${seconds}s
 ┃ 💾 RAM : ${freeMem}GB / ${totalMem}GB
-┃ 📅 Date : ${date}
-┃ ⏰ Time : ${time}
-┗━━━━━━━━━━━━━━━━━━⬣
+┃ 🧠 CPU : ${cpuModel}
+┃ 📅 DATE : ${date}
+┃ ⏰ TIME : ${time}
+┗━━━━━━━━━━━━━━━━━━━━┛
 
-╔═══━━━〔 ⚙️ SETTINGS 〕━━━═══╗
-┃ 👁️ Auto View : ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃ 📵 Anti Call : ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃ 🎙️ Auto Record : ${userConfig.AUTO_RECORDING === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃ ⌨️ Auto Typing : ${userConfig.AUTO_TYPING === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃ ✅ Auto Read : ${userConfig.READ_MESSAGE === 'true' ? 'ON ✅' : 'OFF ❌'}
-╚══════════════════════╝
+╔════〔 ⚙️ BOT SETTINGS 〕════╗
+┃ 👁️ AUTO VIEW :
+┃ ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃
+┃ 📵 ANTI CALL :
+┃ ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃
+┃ 🎙️ AUTO RECORD :
+┃ ${userConfig.AUTO_RECORDING === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃
+┃ ⌨️ AUTO TYPING :
+┃ ${userConfig.AUTO_TYPING === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃
+┃ ✅ AUTO READ :
+┃ ${userConfig.READ_MESSAGE === 'true' ? 'ON ✅' : 'OFF ❌'}
+╚══════════════════════════╝
 `;
 
-        // Order
+        // Category Order
         const catOrder = [
             'general',
             'group',
@@ -111,31 +137,40 @@ cmd({
 
             menu += `
 
-╭━━━〔 ${emoji} ${cat.toUpperCase()} 〕━━━⬣
+╔═══〔 ${emoji} ${cat.toUpperCase()} MENU 〕═══╗
 `;
 
             let count = 1;
 
             for (const c of categories[cat]) {
 
-                menu += `┃ ${String(count).padStart(2, '0')} ✦ ${config.PREFIX}${c.pattern}\n`;
+                menu += `┃ ${String(count).padStart(2, '0')} ✦ ${config.PREFIX}${c.pattern}`;
 
+                if (c.desc) {
+                    menu += `\n┃ ➥ ${c.desc}`;
+                }
+
+                menu += `\n┃`;
                 count++;
             }
 
-            menu += `╰━━━━━━━━━━━━━━━━━━⬣
+            menu += `╚══════════════════════════╝
 `;
         }
 
+        // Footer
         menu += `
 
-╔═══━━━─── • ───━━━═══╗
- 💎 whatsbot.hostify.co.zw 
-╚═══━━━─── • ───━━━═══╝
+╭━━━〔 💎 HOSTIFY OFFICIAL 〕━━━⬣
+┃ 🌐 whatsbot.hostify.co.zw
+┃ 🚀 FAST • SMART • POWERFUL
+┃ ❤️ THANK YOU FOR USING
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
-> © 2026 FREE WHATSBOT
+> © 2026 HOSTIFY AI MINI
 `;
 
+        // Send Message
         await conn.sendMessage(
             from,
             {
@@ -147,6 +182,6 @@ cmd({
 
     } catch (e) {
 
-        reply(`❌ Menu Error : ${e.message}`);
+        reply(`❌ MENU ERROR : ${e.message}`);
     }
 });
