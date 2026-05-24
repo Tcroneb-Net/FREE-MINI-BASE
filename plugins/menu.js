@@ -6,7 +6,7 @@ const os = require('os');
 cmd({
     pattern: 'menu',
     alias: ['help', 'cmds', 'commands'],
-    desc: 'Ultra Plus Stylish Menu',
+    desc: 'Show all commands',
     category: 'general',
     react: '📋'
 }, async (conn, mek, m, { from, sender, reply }) => {
@@ -14,9 +14,11 @@ cmd({
     try {
 
         const number = sender.split('@')[0];
-        const userConfig = await getUserConfigFromMongoDB(number);
 
-        // Group Commands
+        // Safe config load
+        const userConfig = await getUserConfigFromMongoDB(number) || {};
+
+        // Categories
         const categories = {};
 
         for (const command of commands) {
@@ -25,12 +27,14 @@ cmd({
 
             const cat = (command.category || 'misc').toLowerCase();
 
-            if (!categories[cat]) categories[cat] = [];
+            if (!categories[cat]) {
+                categories[cat] = [];
+            }
 
             categories[cat].push(command);
         }
 
-        // Category Emojis
+        // Emojis
         const categoryEmojis = {
             general: '🌐',
             group: '👥',
@@ -49,70 +53,50 @@ cmd({
         const minutes = Math.floor((runtime % 3600) / 60);
         const seconds = Math.floor(runtime % 60);
 
-        // RAM
-        const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
-        const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
+        // Memory
+        const used = (
+            (os.totalmem() - os.freemem()) /
+            1024 / 1024 / 1024
+        ).toFixed(2);
 
-        // CPU
-        const cpuModel = os.cpus()[0].model;
+        const total = (
+            os.totalmem() /
+            1024 / 1024 / 1024
+        ).toFixed(2);
 
-        // Total Commands
-        const totalCommands = commands.filter(c => !c.dontAddCommandList).length;
+        // Total commands
+        const totalCommands = commands.filter(
+            c => !c.dontAddCommandList
+        ).length;
 
-        // Date & Time
+        // Time
         const now = new Date();
 
-        const date = now.toLocaleDateString();
-        const time = now.toLocaleTimeString();
-
-        // Greeting
-        const hour = now.getHours();
-
-        let greeting = '🌙 Good Night';
-
-        if (hour >= 5 && hour < 12) greeting = '🌅 Good Morning';
-        else if (hour >= 12 && hour < 17) greeting = '☀️ Good Afternoon';
-        else if (hour >= 17 && hour < 21) greeting = '🌇 Good Evening';
-
-        // Menu Start
+        // Menu text
         let menu = `
-╭━━━〔 🤖 HOSTIFY AI MINI 〕━━━⬣
-┃ ✨ FREE WHATSBOT SYSTEM
-┃ ${greeting}
-╰━━━━━━━━━━━━━━━━━━━━⬣
+╔═══〔 🤖 HOSTIFY AI MINI 〕═══╗
+┃ 👤 User : ${m.pushName || 'User'}
+┃ ⚡ Prefix : ${config.PREFIX || '.'}
+┃ 🌐 Mode : ${config.WORK_TYPE || 'public'}
+┃ 📦 Commands : ${totalCommands}
+┃ 🕐 Runtime : ${hours}h ${minutes}m ${seconds}s
+┃ 💾 RAM : ${used}GB / ${total}GB
+┃ 📅 Date : ${now.toLocaleDateString()}
+┃ ⏰ Time : ${now.toLocaleTimeString()}
+╚════════════════════════╝
 
-┏━━━━━━━━━━━━━━━━━━━━┓
-┃ 👤 USER : ${m.pushName || 'User'}
-┃ ⚡ PREFIX : ${config.PREFIX}
-┃ 🌐 MODE : ${config.WORK_TYPE || 'public'}
-┃ 📦 COMMANDS : ${totalCommands}
-┃ 🕐 RUNTIME : ${hours}h ${minutes}m ${seconds}s
-┃ 💾 RAM : ${freeMem}GB / ${totalMem}GB
-┃ 🧠 CPU : ${cpuModel}
-┃ 📅 DATE : ${date}
-┃ ⏰ TIME : ${time}
-┗━━━━━━━━━━━━━━━━━━━━┛
-
-╔════〔 ⚙️ BOT SETTINGS 〕════╗
-┃ 👁️ AUTO VIEW :
-┃ ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃
-┃ 📵 ANTI CALL :
-┃ ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃
-┃ 🎙️ AUTO RECORD :
-┃ ${userConfig.AUTO_RECORDING === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃
-┃ ⌨️ AUTO TYPING :
-┃ ${userConfig.AUTO_TYPING === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃
-┃ ✅ AUTO READ :
-┃ ${userConfig.READ_MESSAGE === 'true' ? 'ON ✅' : 'OFF ❌'}
-╚══════════════════════════╝
+╔═══〔 ⚙️ SETTINGS 〕═══╗
+┃ 👁️ Auto View : ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃ 📵 Anti Call : ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃ 🎙️ Auto Record : ${userConfig.AUTO_RECORDING === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃ ⌨️ Auto Typing : ${userConfig.AUTO_TYPING === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃ ✅ Auto Read : ${userConfig.READ_MESSAGE === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃ 💎 Auto VV : ${userConfig.AUTO_VIEWONCE_SAVE === 'true' ? 'ON ✅' : 'OFF ❌'}
+╚════════════════════════╝
 `;
 
-        // Category Order
-        const catOrder = [
+        // Order
+        const order = [
             'general',
             'group',
             'settings',
@@ -123,54 +107,44 @@ cmd({
             'misc'
         ];
 
-        const sortedCats = [
-            ...catOrder.filter(c => categories[c]),
-            ...Object.keys(categories).filter(c => !catOrder.includes(c))
+        const sorted = [
+            ...order.filter(c => categories[c]),
+            ...Object.keys(categories).filter(c => !order.includes(c))
         ];
 
-        // Categories
-        for (const cat of sortedCats) {
+        // Add commands
+        for (const cat of sorted) {
 
-            if (!categories[cat]?.length) continue;
+            if (!categories[cat]) continue;
 
             const emoji = categoryEmojis[cat] || '📦';
 
             menu += `
 
-╔═══〔 ${emoji} ${cat.toUpperCase()} MENU 〕═══╗
+╭━━━〔 ${emoji} ${cat.toUpperCase()} 〕━━━⬣
 `;
 
             let count = 1;
 
             for (const c of categories[cat]) {
 
-                menu += `┃ ${String(count).padStart(2, '0')} ✦ ${config.PREFIX}${c.pattern}`;
+                menu += `┃ ${count}. ${config.PREFIX || '.'}${c.pattern}\n`;
 
-                if (c.desc) {
-                    menu += `\n┃ ➥ ${c.desc}`;
-                }
-
-                menu += `\n┃`;
                 count++;
             }
 
-            menu += `╚══════════════════════════╝
+            menu += `╰━━━━━━━━━━━━━━━━━━⬣
 `;
         }
 
-        // Footer
         menu += `
-
-╭━━━〔 💎 HOSTIFY OFFICIAL 〕━━━⬣
+╔═══〔 💎 HOSTIFY 〕═══╗
 ┃ 🌐 whatsbot.hostify.co.zw
-┃ 🚀 FAST • SMART • POWERFUL
-┃ ❤️ THANK YOU FOR USING
-╰━━━━━━━━━━━━━━━━━━━━⬣
-
-> © 2026 HOSTIFY AI MINI
+┃ 🚀 FAST • STABLE • POWERFUL
+╚══════════════════════╝
 `;
 
-        // Send Message
+        // SEND
         await conn.sendMessage(
             from,
             {
@@ -182,6 +156,10 @@ cmd({
 
     } catch (e) {
 
-        reply(`❌ MENU ERROR : ${e.message}`);
+        console.log(e);
+
+        reply(
+            `❌ MENU ERROR\n\n${e.message}`
+        );
     }
 });
