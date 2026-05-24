@@ -20,7 +20,7 @@ module.exports = {
     PREFIX: process.env.PREFIX || '.',
     OWNER_NUMBER: process.env.OWNER_NUMBER || '263788533181', // Mettez votre numéro ici
     BOT_NAME: "HOSTIFY AI MINI",
-    BOT_FOOTER: '© whatsbot.hostify.co.zw,
+    BOT_FOOTER: '© whatsbot.hostify.co.zw',
     
     // Mode de travail : public, private, group, inbox
     WORK_TYPE: process.env.WORK_TYPE || "public", 
