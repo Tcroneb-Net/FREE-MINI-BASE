@@ -6,77 +6,183 @@ const os = require('os');
 cmd({
     pattern: 'menu',
     alias: ['help', 'cmds', 'commands'],
-    desc: 'Show all commands by category',
+    desc: 'Ultra Plus Stylish Menu',
     category: 'general',
     react: '📋'
-}, async (conn, mek, m, { from, sender, isOwner, reply }) => {
+}, async (conn, mek, m, { from, sender, reply }) => {
+
     try {
+
         const number = sender.split('@')[0];
         const userConfig = await getUserConfigFromMongoDB(number);
 
-        // Group commands by category
+        // Group Commands
         const categories = {};
-        for (const cmd of commands) {
-            if (cmd.dontAddCommandList) continue;
-            const cat = (cmd.category || 'misc').toLowerCase();
+
+        for (const command of commands) {
+
+            if (command.dontAddCommandList) continue;
+
+            const cat = (command.category || 'misc').toLowerCase();
+
             if (!categories[cat]) categories[cat] = [];
-            categories[cat].push(cmd);
+
+            categories[cat].push(command);
         }
 
+        // Category Emojis
         const categoryEmojis = {
             general: '🌐',
             group: '👥',
             settings: '⚙️',
             owner: '👑',
-            tools: '🔧',
+            tools: '🛠️',
             fun: '🎭',
             media: '🎬',
             misc: '📦'
         };
 
-        const uptime = process.uptime();
-        const hours = Math.floor(uptime / 3600);
-        const minutes = Math.floor((uptime % 3600) / 60);
-        const seconds = Math.floor(uptime % 60);
+        // Runtime
+        const runtime = process.uptime();
 
-        let menuText = `╭──────────────────────◇\n`;
-        menuText += `│  *🤖 INCONNU BOY — MENU*\n`;
-        menuText += `│──────────────────────\n`;
-        menuText += `│ 👤 User: ${m.pushName || 'User'}\n`;
-        menuText += `│ ⚡ Prefix: [ ${config.PREFIX} ]\n`;
-        menuText += `│ 🕐 Uptime: ${hours}h ${minutes}m ${seconds}s\n`;
-        menuText += `│ 🔌 Mode: ${config.WORK_TYPE || 'public'}\n`;
-        menuText += `│──────────────────────\n`;
-        menuText += `│ ⚙️ Settings Status\n`;
-        menuText += `│ 👁️ Auto View: ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}\n`;
-        menuText += `│ 📵 Anti Call: ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}\n`;
-        menuText += `│ 🎙️ Auto Record: ${userConfig.AUTO_RECORDING === 'true' ? 'ON ✅' : 'OFF ❌'}\n`;
-        menuText += `│ ⌨️ Auto Typing: ${userConfig.AUTO_TYPING === 'true' ? 'ON ✅' : 'OFF ❌'}\n`;
-        menuText += `│ ✅ Auto Read: ${userConfig.READ_MESSAGE === 'true' ? 'ON ✅' : 'OFF ❌'}\n`;
-        menuText += `╰──────────────────────◇\n\n`;
+        const hours = Math.floor(runtime / 3600);
+        const minutes = Math.floor((runtime % 3600) / 60);
+        const seconds = Math.floor(runtime % 60);
 
-        // List commands per category
-        const catOrder = ['general', 'group', 'settings', 'owner', 'tools', 'fun', 'media', 'misc'];
-        const sortedCats = [...catOrder.filter(c => categories[c]), ...Object.keys(categories).filter(c => !catOrder.includes(c))];
+        // RAM
+        const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
+        const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
 
+        // CPU
+        const cpuModel = os.cpus()[0].model;
+
+        // Total Commands
+        const totalCommands = commands.filter(c => !c.dontAddCommandList).length;
+
+        // Date & Time
+        const now = new Date();
+
+        const date = now.toLocaleDateString();
+        const time = now.toLocaleTimeString();
+
+        // Greeting
+        const hour = now.getHours();
+
+        let greeting = '🌙 Good Night';
+
+        if (hour >= 5 && hour < 12) greeting = '🌅 Good Morning';
+        else if (hour >= 12 && hour < 17) greeting = '☀️ Good Afternoon';
+        else if (hour >= 17 && hour < 21) greeting = '🌇 Good Evening';
+
+        // Menu Start
+        let menu = `
+╭━━━〔 🤖 HOSTIFY AI MINI 〕━━━⬣
+┃ ✨ FREE WHATSBOT SYSTEM
+◇
+┃ ${greeting}
+╰━━━━━━━━━━━━━━━━⬣
+
+┏━━━━━━━━━━━━━━━━━━━━┓
+┃ 👤 USER : ${m.pushName || 'User'}
+┃ ⚡ PREFIX : ${config.PREFIX}
+┃ 🌐 MODE : ${config.WORK_TYPE || 'public'}
+┃ 📦 COMMANDS : ${totalCommands}
+┃ 🕐 RUNTIME : ${hours}h ${minutes}m ${seconds}s
+┃ 💾 RAM : ${freeMem}GB / ${totalMem}GB
+┃ 🧠 CPU : ${cpuModel}
+┃ 📅 DATE : ${date}
+┃ ⏰ TIME : ${time}
+┗━━━━━━━━━━━━━━━━━━━━┛
+
+╔════〔 ⚙️ BOT SETTINGS 〕════╗
+┃ 👁️ AUTO VIEW :
+┃ ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃
+┃ 📵 ANTI CALL :
+┃ ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃
+┃ 🎙️ AUTO RECORD :
+┃ ${userConfig.AUTO_RECORDING === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃
+┃ ⌨️ AUTO TYPING :
+┃ ${userConfig.AUTO_TYPING === 'true' ? 'ON ✅' : 'OFF ❌'}
+┃
+┃ ✅ AUTO READ :
+┃ ${userConfig.READ_MESSAGE === 'true' ? 'ON ✅' : 'OFF ❌'}
+╚══════════════════════════╝
+`;
+
+        // Category Order
+        const catOrder = [
+            'general',
+            'group',
+            'settings',
+            'owner',
+            'tools',
+            'fun',
+            'media',
+            'misc'
+        ];
+
+        const sortedCats = [
+            ...catOrder.filter(c => categories[c]),
+            ...Object.keys(categories).filter(c => !catOrder.includes(c))
+        ];
+
+        // Categories
         for (const cat of sortedCats) {
-            if (!categories[cat] || !categories[cat].length) continue;
+
+            if (!categories[cat]?.length) continue;
+
             const emoji = categoryEmojis[cat] || '📦';
-            menuText += `╭─── ${emoji} *${cat.toUpperCase()}* ───\n`;
+
+            menu += `
+
+╔═══〔 ${emoji} ${cat.toUpperCase()} MENU 〕═══╗
+`;
+
+            let count = 1;
+
             for (const c of categories[cat]) {
-                menuText += `│ ${config.PREFIX}${c.pattern}${c.desc ? ' — ' + c.desc : ''}\n`;
+
+                menu += `┃ ${String(count).padStart(2, '0')} ✦ ${config.PREFIX}${c.pattern}`;
+
+                if (c.desc) {
+                    menu += `\n┃ ➥ ${c.desc}`;
+                }
+
+                menu += `\n┃`;
+                count++;
             }
-            menuText += `╰────────────────────◇\n\n`;
+
+            menu += `╚══════════════════════════╝
+`;
         }
 
-        menuText += `> *© Powered by INCONNU BOY*`;
+        // Footer
+        menu += `
 
-        await conn.sendMessage(from, {
-            image: { url: config.IMAGE_PATH },
-            caption: menuText
-        }, { quoted: mek });
+╭━━━〔 💎 HOSTIFY OFFICIAL 〕━━━⬣
+┃ 🌐 whatsbot.hostify.co.zw
+┃ 🚀 FAST • SMART • POWERFUL
+┃ ❤️ THANK YOU FOR USING
+╰━━━━━━━━━━━━━━━━━⬣
+
+> © 2026 HOSTIFY AI MINI
+`;
+
+        // Send Message
+        await conn.sendMessage(
+            from,
+            {
+                image: { url: config.IMAGE_PATH },
+                caption: menu
+            },
+            { quoted: mek }
+        );
 
     } catch (e) {
-        reply('*❌ Menu error: ' + e.message + '*');
+
+        reply(`❌ MENU ERROR : ${e.message}`);
     }
 });
