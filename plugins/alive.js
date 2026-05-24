@@ -80,13 +80,13 @@ async (conn, mek, m, {
 ┃ 💎 VERSION :
 ┃ ULTRA PLUS 7.0
 
-╚═══════════════════════╝
+╚═══════════════════╝
 
-╭━━━〔 *❤️ HOSTIFY SYSTEM* 〕━━━⬣
+╭━〔 *❤️ HOSTIFY SYSTEM* 〕━⬣
 ┃ 🌐 whatsbot.hostify.co.zw
 ┃ 🚀 FAST • SAFE • POWERFUL
 ┃ 💫 BOT ACTIVE AND RUNNING
-╰━━━━━━━━━━━━━━━━━━━━━━⬣
+╰━━━━━━━━━━━━━⬣
 
 > ${config.BOT_FOOTER || 'Powered By HOSTIFY'}
 `;
