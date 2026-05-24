@@ -1,414 +1,102 @@
 const { cmd } = require('../inconnuboy');
+const { getUserConfigFromMongoDB, updateUserConfigInMongoDB } = require('../lib/database');
 
-const {
-    getUserConfigFromMongoDB,
-    updateUserConfigInMongoDB
-} = require('../lib/database');
+// Helper to toggle a config key
+async function toggleSetting(number, key, action, reply, onText, offText) {
+    const userConfig = await getUserConfigFromMongoDB(number);
+    const current = userConfig[key] === 'true';
 
-//
-// ⚡ SAFE SETTINGS SYSTEM
-//
-
-async function toggleSetting({
-    sender,
-    key,
-    action,
-    reply,
-    title,
-    enableText,
-    disableText
-}) {
-
-    try {
-
-        const number = sender.split('@')[0];
-
-        // Get Config Safely
-        let userConfig = await getUserConfigFromMongoDB(number);
-
-        if (!userConfig || typeof userConfig !== 'object') {
-            userConfig = {};
-        }
-
-        // Current Status
-        const current = userConfig[key] === 'true';
-
-        // Show Status
-        if (!action) {
-
-            return reply(`
-╔═══〔 ⚙️ ${title.toUpperCase()} 〕═══╗
-┃ STATUS : ${current ? 'ON ✅' : 'OFF ❌'}
-┃
-┃ USAGE :
-┃ .${key.toLowerCase()} on
-┃ .${key.toLowerCase()} off
-╚════════════════════════╝
-`);
-        }
-
-        // Validate
-        const input = action.toLowerCase();
-
-        if (!['on', 'off'].includes(input)) {
-
-            return reply(`
-❌ Invalid Option
-
-Example:
-.${key.toLowerCase()} on
-.${key.toLowerCase()} off
-`);
-        }
-
-        // Save
-        const newValue = input === 'on';
-
-        userConfig[key] = String(newValue);
-
-        await updateUserConfigInMongoDB(
-            number,
-            userConfig
-        );
-
-        return reply(
-            newValue ? enableText : disableText
-        );
-
-    } catch (e) {
-
-        console.log(e);
-
-        return reply(
-            `❌ SETTINGS ERROR\n\n${e.message}`
-        );
+    if (!action || !['on', 'off'].includes(action)) {
+        return reply(`Current status: *${current ? 'ON ✅' : 'OFF ❌'}*\nUsage: *.command on/off*`);
     }
+
+    const newVal = action === 'on';
+    userConfig[key] = String(newVal);
+    await updateUserConfigInMongoDB(number, userConfig);
+    reply(newVal ? onText : offText);
 }
 
-//
-// 👁️ AUTO VIEW STATUS
-//
-
+// ── AUTO VIEW STATUS ──
 cmd({
     pattern: 'autoviewstatus',
     alias: ['autoview', 'autostatus'],
     desc: 'Auto view WhatsApp statuses',
     category: 'settings',
     react: '👁️'
-},
-async (conn, mek, m, {
-    sender,
-    args,
-    reply,
-    isOwner
-}) => {
-
-    if (!isOwner) {
-        return reply('❌ Owner Only Command');
-    }
-
-    await toggleSetting({
-        sender,
-        key: 'AUTO_VIEW_STATUS',
-        action: args[0],
+}, async (conn, mek, m, { from, sender, args, reply, isOwner }) => {
+    if (!isOwner) return reply('*❌ Owner only command.*');
+    const number = sender.split('@')[0];
+    await toggleSetting(number, 'AUTO_VIEW_STATUS', args[0],
         reply,
-        title: 'Auto View Status',
-
-        enableText: `
-╔═══〔 👁️ AUTO VIEW STATUS 〕═══╗
-┃ ✅ ENABLED
-┃ Bot Will Auto View Status
-╚════════════════════════════╝
-`,
-
-        disableText: `
-╔═══〔 👁️ AUTO VIEW STATUS 〕═══╗
-┃ ❌ DISABLED
-╚════════════════════════════╝
-`
-    });
+        '*👁️ Auto View Status: ENABLED ✅*\n\nI will now auto-view all statuses.',
+        '*👁️ Auto View Status: DISABLED ❌*'
+    );
 });
 
-//
-// 📵 ANTI CALL
-//
-
+// ── ANTI CALL ──
 cmd({
     pattern: 'anticall',
-    alias: ['blockcall'],
-    desc: 'Reject incoming calls',
+    alias: ['antical', 'blockcall'],
+    desc: 'Auto reject incoming calls',
     category: 'settings',
     react: '📵'
-},
-async (conn, mek, m, {
-    sender,
-    args,
-    reply,
-    isOwner
-}) => {
-
-    if (!isOwner) {
-        return reply('❌ Owner Only Command');
-    }
-
-    await toggleSetting({
-        sender,
-        key: 'ANTI_CALL',
-        action: args[0],
+}, async (conn, mek, m, { from, sender, args, reply, isOwner }) => {
+    if (!isOwner) return reply('*❌ Owner only command.*');
+    const number = sender.split('@')[0];
+    await toggleSetting(number, 'ANTI_CALL', args[0],
         reply,
-        title: 'Anti Call',
-
-        enableText: `
-╔═══〔 📵 ANTI CALL 〕═══╗
-┃ ✅ ENABLED
-┃ Calls Will Be Rejected
-╚══════════════════════╝
-`,
-
-        disableText: `
-╔═══〔 📵 ANTI CALL 〕═══╗
-┃ ❌ DISABLED
-╚══════════════════════╝
-`
-    });
+        '*📵 Anti Call: ENABLED ✅*\n\nAll incoming calls will be automatically rejected.',
+        '*📵 Anti Call: DISABLED ❌*'
+    );
 });
 
-//
-// 🎙️ AUTO RECORDING
-//
-
+// ── AUTO RECORDING ──
 cmd({
     pattern: 'autorecording',
-    alias: ['autorecord'],
-    desc: 'Show recording presence',
+    alias: ['autorecord', 'recording'],
+    desc: 'Show recording presence when receiving messages',
     category: 'settings',
     react: '🎙️'
-},
-async (conn, mek, m, {
-    sender,
-    args,
-    reply,
-    isOwner
-}) => {
-
-    if (!isOwner) {
-        return reply('❌ Owner Only Command');
-    }
-
-    await toggleSetting({
-        sender,
-        key: 'AUTO_RECORDING',
-        action: args[0],
+}, async (conn, mek, m, { from, sender, args, reply, isOwner }) => {
+    if (!isOwner) return reply('*❌ Owner only command.*');
+    const number = sender.split('@')[0];
+    await toggleSetting(number, 'AUTO_RECORDING', args[0],
         reply,
-        title: 'Auto Recording',
-
-        enableText: `
-╔═══〔 🎙️ AUTO RECORDING 〕═══╗
-┃ ✅ ENABLED
-┃ Recording Presence Active
-╚═══════════════════════════╝
-`,
-
-        disableText: `
-╔═══〔 🎙️ AUTO RECORDING 〕═══╗
-┃ ❌ DISABLED
-╚═══════════════════════════╝
-`
-    });
+        '*🎙️ Auto Recording: ENABLED ✅*\n\nI will show "recording..." on every message.',
+        '*🎙️ Auto Recording: DISABLED ❌*'
+    );
 });
 
-//
-// ⌨️ AUTO TYPING
-//
-
+// ── AUTO TYPING ──
 cmd({
     pattern: 'autotyping',
     alias: ['autotype'],
-    desc: 'Show typing presence',
+    desc: 'Show typing presence when receiving messages',
     category: 'settings',
     react: '⌨️'
-},
-async (conn, mek, m, {
-    sender,
-    args,
-    reply,
-    isOwner
-}) => {
-
-    if (!isOwner) {
-        return reply('❌ Owner Only Command');
-    }
-
-    await toggleSetting({
-        sender,
-        key: 'AUTO_TYPING',
-        action: args[0],
+}, async (conn, mek, m, { from, sender, args, reply, isOwner }) => {
+    if (!isOwner) return reply('*❌ Owner only command.*');
+    const number = sender.split('@')[0];
+    await toggleSetting(number, 'AUTO_TYPING', args[0],
         reply,
-        title: 'Auto Typing',
-
-        enableText: `
-╔═══〔 ⌨️ AUTO TYPING 〕═══╗
-┃ ✅ ENABLED
-┃ Typing Presence Active
-╚════════════════════════╝
-`,
-
-        disableText: `
-╔═══〔 ⌨️ AUTO TYPING 〕═══╗
-┃ ❌ DISABLED
-╚════════════════════════╝
-`
-    });
+        '*⌨️ Auto Typing: ENABLED ✅*',
+        '*⌨️ Auto Typing: DISABLED ❌*'
+    );
 });
 
-//
-// ✅ AUTO READ
-//
-
+// ── READ MESSAGE ──
 cmd({
-    pattern: 'autoread',
-    alias: ['readmessage', 'bluetick'],
-    desc: 'Auto read messages',
+    pattern: 'readmessage',
+    alias: ['autoread', 'bluetick'],
+    desc: 'Auto read messages (blue tick)',
     category: 'settings',
     react: '✅'
-},
-async (conn, mek, m, {
-    sender,
-    args,
-    reply,
-    isOwner
-}) => {
-
-    if (!isOwner) {
-        return reply('❌ Owner Only Command');
-    }
-
-    await toggleSetting({
-        sender,
-        key: 'READ_MESSAGE',
-        action: args[0],
+}, async (conn, mek, m, { from, sender, args, reply, isOwner }) => {
+    if (!isOwner) return reply('*❌ Owner only command.*');
+    const number = sender.split('@')[0];
+    await toggleSetting(number, 'READ_MESSAGE', args[0],
         reply,
-        title: 'Auto Read',
-
-        enableText: `
-╔═══〔 ✅ AUTO READ 〕═══╗
-┃ ✅ ENABLED
-┃ Messages Will Auto Read
-╚══════════════════════╝
-`,
-
-        disableText: `
-╔═══〔 ✅ AUTO READ 〕═══╗
-┃ ❌ DISABLED
-╚══════════════════════╝
-`
-    });
-});
-
-//
-// 💎 AUTO VIEWONCE SAVE
-//
-
-cmd({
-    pattern: 'autovv',
-    alias: ['autosavevv', 'autoviewonce'],
-    desc: 'Auto save ViewOnce media',
-    category: 'settings',
-    react: '💎'
-},
-async (conn, mek, m, {
-    sender,
-    args,
-    reply,
-    isOwner
-}) => {
-
-    if (!isOwner) {
-        return reply('❌ Owner Only Command');
-    }
-
-    await toggleSetting({
-        sender,
-        key: 'AUTO_VIEWONCE_SAVE',
-        action: args[0],
-        reply,
-        title: 'Auto ViewOnce',
-
-        enableText: `
-╔═══〔 💎 AUTO VIEWONCE 〕═══╗
-┃ ✅ ENABLED
-┃ ViewOnce Media Will Save
-┃ To Owner Inbox
-╚══════════════════════════╝
-`,
-
-        disableText: `
-╔═══〔 💎 AUTO VIEWONCE 〕═══╗
-┃ ❌ DISABLED
-╚══════════════════════════╝
-`
-    });
-});
-
-//
-// 📊 SETTINGS STATUS
-//
-
-cmd({
-    pattern: 'settings',
-    desc: 'View all settings status',
-    category: 'settings',
-    react: '⚙️'
-},
-async (conn, mek, m, {
-    sender,
-    reply,
-    isOwner
-}) => {
-
-    try {
-
-        if (!isOwner) {
-            return reply('❌ Owner Only Command');
-        }
-
-        const number = sender.split('@')[0];
-
-        let userConfig =
-            await getUserConfigFromMongoDB(number);
-
-        if (!userConfig || typeof userConfig !== 'object') {
-            userConfig = {};
-        }
-
-        reply(`
-╔═══〔 ⚙️ BOT SETTINGS 〕═══╗
-
-┃ 👁️ Auto View :
-┃ ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}
-
-┃ 📵 Anti Call :
-┃ ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}
-
-┃ 🎙️ Auto Recording :
-┃ ${userConfig.AUTO_RECORDING === 'true' ? 'ON ✅' : 'OFF ❌'}
-
-┃ ⌨️ Auto Typing :
-┃ ${userConfig.AUTO_TYPING === 'true' ? 'ON ✅' : 'OFF ❌'}
-
-┃ ✅ Auto Read :
-┃ ${userConfig.READ_MESSAGE === 'true' ? 'ON ✅' : 'OFF ❌'}
-
-┃ 💎 Auto VV Save :
-┃ ${userConfig.AUTO_VIEWONCE_SAVE === 'true' ? 'ON ✅' : 'OFF ❌'}
-
-╚════════════════════════╝
-`);
-
-    } catch (e) {
-
-        console.log(e);
-
-        reply(`❌ ERROR\n\n${e.message}`);
-    }
+        '*✅ Auto Read (Blue Tick): ENABLED ✅*',
+        '*✅ Auto Read (Blue Tick): DISABLED ❌*'
+    );
 });
