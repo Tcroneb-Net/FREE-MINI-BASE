@@ -80,7 +80,8 @@ cmd({
 ┃ ✨ FREE WHATSBOT SYSTEM
 ◇
 ┃ ${greeting}
-╰━━━━━━━━━━━━━━━━⬣
+◇
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
 ┏━━━━━━━━━━━━━━━━━━━━┓
 ┃ 👤 USER : ${m.pushName || 'User'}
@@ -162,11 +163,11 @@ cmd({
         // Footer
         menu += `
 
-╭━━━〔 💎 HOSTIFY OFFICIAL 〕━━━⬣
+╭━〔 💎 HOSTIFY OFFICIAL 〕━⬣
 ┃ 🌐 whatsbot.hostify.co.zw
 ┃ 🚀 FAST • SMART • POWERFUL
 ┃ ❤️ THANK YOU FOR USING
-╰━━━━━━━━━━━━━━━━━⬣
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
 > © 2026 HOSTIFY AI MINI
 `;
