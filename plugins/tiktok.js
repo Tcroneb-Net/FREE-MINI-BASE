@@ -1,15 +1,16 @@
-const { cmd } = require('../../inconnuboy');
-
-const { post } = require('../../lib/api');
+const { cmd } = require('../inconnuboy');
 
 const {
-    loading,
-    error
-} = require('../../lib/style');
+    downloader
+} = require('../lib/fetch');
+
+//
+// 🎵 TIKTOK DOWNLOADER
+//
 
 cmd({
     pattern: 'tiktok',
-    alias: ['tt'],
+    alias: ['tt', 'ttdl', 'tikdl'],
     desc: 'Download TikTok videos',
     category: 'downloader',
     react: '🎵'
@@ -17,42 +18,130 @@ cmd({
 async (conn, mek, m, {
     from,
     q,
-    reply
+    reply,
+    pushname
 }) => {
 
     try {
 
+        //
+        // CHECK URL
+        //
+
         if (!q) {
-            return reply('❌ Give TikTok URL');
+
+            return reply(`
+╔═══〔 🎵 TIKTOK DOWNLOADER 〕═══╗
+┃ ❌ Please Provide TikTok URL
+┃
+┃ Example:
+┃ .tiktok https://vt.tiktok.com/...
+╚══════════════════════════════╝
+`);
         }
 
-        await reply(
-            loading('Downloading TikTok...')
-        );
+        //
+        // LOADING MESSAGE
+        //
 
-        const data = await post(
-            '/api/downloader/tiktok',
-            {
-                url: q
+        await conn.sendMessage(from, {
+            react: {
+                text: '⏳',
+                key: mek.key
             }
+        });
+
+        const loading = await conn.sendMessage(
+            from,
+            {
+                text: `
+╔═══〔 ⏳ DOWNLOADING 〕═══╗
+┃ 🎵 Processing TikTok Video
+┃ 🚀 Please Wait...
+╚════════════════════════╝
+`
+            },
+            { quoted: mek }
         );
 
-        if (!data || data.status === false) {
-            return reply(
-                error('Failed To Download')
-            );
+        //
+        // API REQUEST
+        //
+
+        const data = await downloader(
+            '/api/downloader/tiktok',
+            q
+        );
+
+        //
+        // ERROR
+        //
+
+        if (!data.status) {
+
+            return reply(`
+╔═══〔 ❌ API ERROR 〕═══╗
+┃ ${data.error}
+╚══════════════════════╝
+`);
         }
+
+        //
+        // RESULT
+        //
+
+        const result =
+            data.result.result ||
+            data.result;
+
+        //
+        // VIDEO URL
+        //
 
         const video =
-            data.result?.video ||
-            data.video ||
-            data.url;
+            result.video ||
+            result.nowm ||
+            result.no_watermark ||
+            result.url;
+
+        //
+        // AUDIO URL
+        //
+
+        const audio =
+            result.audio ||
+            result.music ||
+            result.mp3;
+
+        //
+        // META
+        //
+
+        const title =
+            result.title ||
+            'TikTok Video';
+
+        const author =
+            result.author ||
+            result.nickname ||
+            'Unknown';
+
+        //
+        // NO VIDEO
+        //
 
         if (!video) {
-            return reply(
-                error('Video Not Found')
-            );
+
+            return reply(`
+╔═══〔 ❌ DOWNLOAD FAILED 〕═══╗
+┃ Unable To Download Video
+╚════════════════════════════╝
+`);
         }
+
+        //
+        // SEND VIDEO
+        //
 
         await conn.sendMessage(
             from,
@@ -61,19 +150,120 @@ async (conn, mek, m, {
                     url: video
                 },
 
+                mimetype: 'video/mp4',
+
                 caption: `
 ╔═══〔 🎵 TIKTOK DOWNLOADER 〕═══╗
-┃ ✅ Download Successful
+
+┃ 👤 User : ${pushname || 'User'}
+┃ 🎬 Title : ${title}
+┃ 👑 Author : ${author}
+┃ ✅ Status : Success
+
 ╚══════════════════════════════╝
-`
+
+> POWERED BY HOSTIFY AI MINI
+`,
+
+                contextInfo: {
+                    forwardingScore: 999,
+                    isForwarded: true,
+
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid:
+                            '120363406434037642@newsletter',
+
+                        newsletterName:
+                            'HOSTIFY AI MINI',
+
+                        serverMessageId: 143
+                    }
+                }
             },
             { quoted: mek }
         );
 
+        //
+        // SEND AUDIO
+        //
+
+        if (audio) {
+
+            await conn.sendMessage(
+                from,
+                {
+                    audio: {
+                        url: audio
+                    },
+
+                    mimetype: 'audio/mpeg',
+
+                    ptt: false
+                },
+                { quoted: mek }
+            );
+        }
+
+        //
+        // SUCCESS REACTION
+        //
+
+        await conn.sendMessage(from, {
+            react: {
+                text: '✅',
+                key: mek.key
+            }
+        });
+
+    } catch (e) {
+
+        console.log('TIKTOK ERROR:', e);
+
+        reply(`
+╔═══〔 ❌ TIKTOK ERROR 〕═══╗
+┃ ${e.message}
+╚══════════════════════════╝
+`);
+    }
+});
+
+//
+// 🔥 AUTO TIKTOK DETECT
+//
+
+cmd({
+    on: 'body'
+},
+async (conn, mek, m, {
+    body,
+    from
+}) => {
+
+    try {
+
+        //
+        // DETECT TIKTOK URL
+        //
+
+        const isTikTok =
+            body.includes('tiktok.com/') ||
+            body.includes('vt.tiktok.com/');
+
+        if (!isTikTok) return;
+
+        //
+        // AUTO REACT
+        //
+
+        await conn.sendMessage(from, {
+            react: {
+                text: '🎵',
+                key: mek.key
+            }
+        });
+
     } catch (e) {
 
         console.log(e);
-
-        reply(error(e.message));
     }
 });
