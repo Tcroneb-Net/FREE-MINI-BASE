@@ -1,4 +1,4 @@
-const { cmd } = require('../command');
+const { cmd } = require('../inconnuboy');
 const yts = require('yt-search');
 const fetch = require('node-fetch');
 
