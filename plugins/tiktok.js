@@ -1,18 +1,140 @@
 const { cmd } = require('../inconnuboy');
 
 const {
-    downloader
+    downloader,
+    getBuffer
 } = require('../lib/fetch');
 
 //
-// 🎵 TIKTOK DOWNLOADER
+// ╔══════════════════════════════╗
+// ║      ULTRA TIKTOK SYSTEM     ║
+// ╚══════════════════════════════╝
+//
+
+//
+// 🔍 EXTRACT DATA SAFELY
+//
+
+function extractData(data = {}) {
+
+    const result =
+        data?.result?.result ||
+        data?.result?.data ||
+        data?.result ||
+        data?.data ||
+        {};
+
+    return {
+
+        //
+        // VIDEO
+        //
+
+        video:
+
+            result.video ||
+            result.play ||
+            result.nowm ||
+            result.no_watermark ||
+            result.video_url ||
+            result.download ||
+            result.url ||
+
+            null,
+
+        //
+        // AUDIO
+        //
+
+        audio:
+
+            result.audio ||
+            result.music ||
+            result.mp3 ||
+            result.music_info?.url ||
+
+            null,
+
+        //
+        // THUMBNAIL
+        //
+
+        image:
+
+            result.cover ||
+            result.thumbnail ||
+            result.thumb ||
+            result.image ||
+
+            null,
+
+        //
+        // TITLE
+        //
+
+        title:
+
+            result.title ||
+            result.caption ||
+            result.desc ||
+
+            'TikTok Video',
+
+        //
+        // AUTHOR
+        //
+
+        author:
+
+            result.author ||
+            result.nickname ||
+            result.username ||
+            result.owner ||
+
+            'Unknown',
+
+        //
+        // LIKES
+        //
+
+        likes:
+
+            result.like ||
+            result.likes ||
+            result.like_count ||
+
+            'Unknown',
+
+        //
+        // COMMENTS
+        //
+
+        comments:
+
+            result.comment ||
+            result.comments ||
+
+            'Unknown'
+    };
+}
+
+//
+// 🎵 MAIN TIKTOK COMMAND
 //
 
 cmd({
     pattern: 'tiktok',
-    alias: ['tt', 'ttdl', 'tikdl'],
-    desc: 'Download TikTok videos',
+    alias: [
+        'tt',
+        'ttdl',
+        'tikdl',
+        'tiktokdl'
+    ],
+
+    desc: 'Download TikTok Videos',
+
     category: 'downloader',
+
     react: '🎵'
 },
 async (conn, mek, m, {
@@ -35,13 +157,13 @@ async (conn, mek, m, {
 ┃ ❌ Please Provide TikTok URL
 ┃
 ┃ Example:
-┃ .tiktok https://vt.tiktok.com/...
+┃ .tiktok https://vt.tiktok.com/
 ╚══════════════════════════════╝
 `);
         }
 
         //
-        // LOADING MESSAGE
+        // REACT
         //
 
         await conn.sendMessage(from, {
@@ -50,6 +172,10 @@ async (conn, mek, m, {
                 key: mek.key
             }
         });
+
+        //
+        // LOADING
+        //
 
         const loading = await conn.sendMessage(
             from,
@@ -74,69 +200,86 @@ async (conn, mek, m, {
         );
 
         //
+        // DEBUG
+        //
+
+        console.log(
+            JSON.stringify(data, null, 2)
+        );
+
+        //
         // ERROR
         //
 
-        if (!data.status) {
+        if (
+            data.status === false ||
+            data.success === false
+        ) {
 
             return reply(`
 ╔═══〔 ❌ API ERROR 〕═══╗
-┃ ${data.error}
+┃ ${data.error || 'Request Failed'}
 ╚══════════════════════╝
 `);
         }
 
         //
-        // RESULT
+        // EXTRACT
         //
 
-        const result =
-            data.result.result ||
-            data.result;
-
-        //
-        // VIDEO URL
-        //
-
-        const video =
-            result.video ||
-            result.nowm ||
-            result.no_watermark ||
-            result.url;
-
-        //
-        // AUDIO URL
-        //
-
-        const audio =
-            result.audio ||
-            result.music ||
-            result.mp3;
-
-        //
-        // META
-        //
-
-        const title =
-            result.title ||
-            'TikTok Video';
-
-        const author =
-            result.author ||
-            result.nickname ||
-            'Unknown';
+        const result = extractData(data);
 
         //
         // NO VIDEO
         //
 
-        if (!video) {
+        if (!result.video) {
 
             return reply(`
 ╔═══〔 ❌ DOWNLOAD FAILED 〕═══╗
-┃ Unable To Download Video
+┃ Video URL Not Found
 ╚════════════════════════════╝
 `);
+        }
+
+        //
+        // THUMBNAIL
+        //
+
+        if (result.image) {
+
+            await conn.sendMessage(
+                from,
+                {
+                    image: {
+                        url: result.image
+                    },
+
+                    caption: `
+╔═══〔 🎵 TIKTOK PREVIEW 〕═══╗
+
+┃ 👤 USER :
+┃ ${pushname || 'User'}
+
+┃ 🎬 TITLE :
+┃ ${result.title}
+
+┃ 👑 AUTHOR :
+┃ ${result.author}
+
+┃ ❤️ LIKES :
+┃ ${result.likes}
+
+┃ 💬 COMMENTS :
+┃ ${result.comments}
+
+╚══════════════════════════╝
+
+> HOSTIFY AI MINI
+`
+                },
+                { quoted: mek }
+            );
         }
 
         //
@@ -147,7 +290,7 @@ async (conn, mek, m, {
             from,
             {
                 video: {
-                    url: video
+                    url: result.video
                 },
 
                 mimetype: 'video/mp4',
@@ -155,21 +298,27 @@ async (conn, mek, m, {
                 caption: `
 ╔═══〔 🎵 TIKTOK DOWNLOADER 〕═══╗
 
-┃ 👤 User : ${pushname || 'User'}
-┃ 🎬 Title : ${title}
-┃ 👑 Author : ${author}
-┃ ✅ Status : Success
+┃ ✅ DOWNLOAD SUCCESSFUL
+
+┃ 🎬 ${result.title}
+
+┃ 👑 ${result.author}
 
 ╚══════════════════════════════╝
 
 > POWERED BY HOSTIFY AI MINI
 `,
 
+                gifPlayback: false,
+
                 contextInfo: {
+
                     forwardingScore: 999,
+
                     isForwarded: true,
 
                     forwardedNewsletterMessageInfo: {
+
                         newsletterJid:
                             '120363406434037642@newsletter',
 
@@ -187,13 +336,13 @@ async (conn, mek, m, {
         // SEND AUDIO
         //
 
-        if (audio) {
+        if (result.audio) {
 
             await conn.sendMessage(
                 from,
                 {
                     audio: {
-                        url: audio
+                        url: result.audio
                     },
 
                     mimetype: 'audio/mpeg',
@@ -217,7 +366,10 @@ async (conn, mek, m, {
 
     } catch (e) {
 
-        console.log('TIKTOK ERROR:', e);
+        console.log(
+            'TIKTOK ERROR:',
+            e
+        );
 
         reply(`
 ╔═══〔 ❌ TIKTOK ERROR 〕═══╗
@@ -228,7 +380,104 @@ async (conn, mek, m, {
 });
 
 //
-// 🔥 AUTO TIKTOK DETECT
+// 🖼️ TIKTOK IMAGE DOWNLOADER
+//
+
+cmd({
+    pattern: 'ttimg',
+    alias: [
+        'tiktokimg',
+        'ttphoto'
+    ],
+
+    desc: 'Download TikTok Images',
+
+    category: 'downloader',
+
+    react: '🖼️'
+},
+async (conn, mek, m, {
+    from,
+    q,
+    reply
+}) => {
+
+    try {
+
+        if (!q) {
+
+            return reply(`
+╔═══〔 🖼️ TIKTOK IMAGE 〕═══╗
+┃ ❌ Please Provide URL
+╚══════════════════════════╝
+`);
+        }
+
+        const data = await downloader(
+            '/api/downloader/tiktok',
+            q
+        );
+
+        const result =
+            data?.result?.result ||
+            data?.result?.data ||
+            data?.result ||
+            {};
+
+        //
+        // IMAGES
+        //
+
+        const images =
+            result.images ||
+            result.image ||
+            result.photos ||
+            [];
+
+        //
+        // NO IMAGES
+        //
+
+        if (!images.length) {
+
+            return reply(`
+╔═══〔 ❌ NO IMAGES FOUND 〕═══╗
+┃ This TikTok Has No Photos
+╚════════════════════════════╝
+`);
+        }
+
+        //
+        // SEND ALL
+        //
+
+        for (const img of images) {
+
+            await conn.sendMessage(
+                from,
+                {
+                    image: {
+                        url: img
+                    }
+                },
+                { quoted: mek }
+            );
+        }
+
+    } catch (e) {
+
+        console.log(e);
+
+        reply(`
+╔═══〔 ❌ IMAGE ERROR 〕═══╗
+┃ ${e.message}
+╚════════════════════════╝
+`);
+    }
+});
+
+//
+// 🔥 AUTO DETECT TIKTOK LINKS
 //
 
 cmd({
@@ -241,18 +490,15 @@ async (conn, mek, m, {
 
     try {
 
-        //
-        // DETECT TIKTOK URL
-        //
-
         const isTikTok =
+
             body.includes('tiktok.com/') ||
             body.includes('vt.tiktok.com/');
 
         if (!isTikTok) return;
 
         //
-        // AUTO REACT
+        // REACT
         //
 
         await conn.sendMessage(from, {
