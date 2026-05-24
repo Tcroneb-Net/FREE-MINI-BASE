@@ -78,7 +78,7 @@ async (conn, mek, m, { from, pushname, reply }) => {
 ┃ 🌐 BOT :
 ┃ HOSTIFY AI MINI
 
-╚════════════════════════════════╝
+╚═════════════════════════════╝
 
 > 💎 Powered By HOSTIFY
 `
