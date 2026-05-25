@@ -1,91 +1,83 @@
-const { cmd } = require("../inconnuboy");
+const { cmd } = require('../inconnuboy');
+const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 cmd({
     pattern: "vv2",
-    alias: ["wah", "ohh", "oho", "🙂", "nice", "ok", "vv"],
-    desc: "Owner Only - Retrieve quoted view-once message",
-    category: "owner",
+    alias: ["viewonce", "reveal"],
+    desc: "Reveal view-once image or video",
+    category: "tools",
+    react: "😎",
     filename: __filename
-}, async (client, message, match, { from, isCreator }) => {
+},
+async (conn, mek, m, { from, sender, reply }) => {
     try {
-        // 1. Strict Owner Check
-        if (!isCreator) {
-            return; // Silent fail for non-owners
+        const quoted =
+            mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+
+        if (!quoted) {
+            return reply("*APKO KISI NE KOI PRIVATE PHOTO VIDEO YA VOICE BHEJI HAI 🤔 AUR AP USE OPEN KAR KE 😃 BAR BAR DEKHNA CHAHTE HAI 😎 TO AP ABHI US PRIVATE MSG KO MENTION KARO 🤗*\n*AUUR PHIR ESE LIKHO ☺️*\n\n*❮VV❯*\n\n*PHIR DEKHO KAMAL 😎*");
         }
 
-        // 2. Check if quoted message exists
-        if (!match.quoted) {
-            return await client.sendMessage(from, {
-                text: "*🍁 Please reply to a view-once message!*"
-            }, { quoted: message });
+        // Handle view-once wrapper (Baileys v6+)
+        const viewOnceMsg =
+            quoted.viewOnceMessageV2 ||
+            quoted.viewOnceMessage ||
+            null;
+
+        const mediaMessage =
+            viewOnceMsg?.message?.imageMessage ||
+            viewOnceMsg?.message?.videoMessage ||
+            quoted.imageMessage ||
+            quoted.videoMessage;
+
+        if (!mediaMessage) {
+            return reply("*DUBARA KOSHISH KARE 😢*");
         }
 
-        // 3. Check if quoted message has media
-        // Some libraries store media in 'message' object differently
-        const quotedMsg = match.quoted;
-        
-        // Determine media type
-        const mtype = quotedMsg.mtype; // e.g., 'imageMessage', 'videoMessage', 'audioMessage'
-        
-        if (!["imageMessage", "videoMessage", "audioMessage"].includes(mtype)) {
-             return await client.sendMessage(from, {
-                text: "❌ The replied message does not contain valid media (Image/Video/Audio)."
-            }, { quoted: message });
+        const isImage = !!mediaMessage.imageMessage || mediaMessage.mimetype?.startsWith("image");
+        const isVideo = !!mediaMessage.videoMessage || mediaMessage.mimetype?.startsWith("video");
+
+        if (!mediaMessage.viewOnce) {
+            return reply("*SIRF PRIVATE VIEW ONCE MSG KO MENTION KARO 🤗*");
         }
 
-        // 4. Download Media
-        const buffer = await quotedMsg.download();
-        
-        if (!buffer || buffer.length === 0) {
-            throw new Error("Failed to download media buffer.");
+        // Ping-style reaction
+        const reactionEmojis = ['😃'];
+        const reactEmoji = reactionEmojis[Math.floor(Math.random() * reactionEmojis.length)];
+
+        await conn.sendMessage(from, {
+            react: { text: reactEmoji, key: mek.key }
+        });
+
+        // Download media
+        const stream = await downloadContentFromMessage(
+            mediaMessage,
+            isImage ? "image" : "video"
+        );
+
+        let buffer = Buffer.from([]);
+        for await (const chunk of stream) {
+            buffer = Buffer.concat([buffer, chunk]);
         }
 
-        const options = { 
-            quoted: message,
-            // IMPORTANT: Ensure the resent message is NOT view-once
-            viewOnce: false 
-        };
+        // Send revealed media (NOT view-once)
+        await conn.sendMessage(from, {
+            [isImage ? "image" : "video"]: buffer,
+            caption: mediaMessage.caption || '',
+            contextInfo: {
+                mentionedJid: [sender],
+                forwardingScore: 999,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: "120363406434037642@newsletter",
+                    newsletterName: "BY BILAL",
+                    serverMessageId: 143
+                }
+            }
+        }, { quoted: mek });
 
-        let messageContent = {};
-
-        switch (mtype) {
-            case "imageMessage":
-                messageContent = {
-                    image: buffer,
-                    caption: quotedMsg.text || '', // Preserve original caption if any
-                    mimetype: quotedMsg.mimetype || "image/jpeg",
-                    viewOnce: false // Explicitly disable view once
-                };
-                break;
-            case "videoMessage":
-                messageContent = {
-                    video: buffer,
-                    caption: quotedMsg.text || '',
-                    mimetype: quotedMsg.mimetype || "video/mp4",
-                    viewOnce: false // Explicitly disable view once
-                };
-                break;
-            case "audioMessage":
-                messageContent = {
-                    audio: buffer,
-                    mimetype: quotedMsg.mimetype || "audio/mp4",
-                    ptt: quotedMsg.ptt || false, // Preserve voice note status
-                    viewOnce: false // Explicitly disable view once
-                };
-                break;
-        }
-
-        // 5. Send to Owner's DM (message.sender is the owner here since isCreator is true)
-        await client.sendMessage(message.sender, messageContent, options);
-        
-        // Optional: Confirm success in the group chat (silent or visible)
-        // await client.sendMessage(from, { react: { text: "✅", key: message.key } });
-
-    } catch (error) {
-        console.error("VV2 Error:", error);
-        // Only send error message if it's a genuine error, not just a silent fail
-        await client.sendMessage(from, {
-            text: "❌ Error fetching message:\n" + error.message
-        }, { quoted: message });
+    } catch (err) {
+        console.error("*PRIVATE MSG OPEN NAHI HO RHA 😭*:", err);
+        reply("❌ Failed ");
     }
 });
