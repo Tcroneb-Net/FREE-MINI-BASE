@@ -76,24 +76,15 @@ cmd({
 
         // Menu Start
         let menu = `
-╭━━━〔 🤖 HOSTIFY AI MINI 〕━━━⬣
-┃ ✨ FREE WHATSBOT SYSTEM
-◇
-┃ ${greeting}
-◇
-╰━━━━━━━━━━━━━━━━━━━━⬣
+*╭━━━ 〔 𝚃𝙲𝚁𝙾𝙽𝙴𝙱 𝚇𝙼𝙳 𝙿𝙻𝚄𝚂〕━━━┈⊷*
+*┃➣* *ᴜsᴇʀ* : ${m.pushName || 'User'}
+*┃➣* *ʀᴜɴᴛɪᴍᴇ* : ${hours}h ${minutes}m ${seconds}s
+*┃➣* *ᴍᴏᴅᴇ* : ${config.WORK_TYPE || 'public'}}
+*┃➣* *ᴘʀᴇғɪx* : [ ${config.PREFIX} ]
+*┃➣* *ᴩʟᴜɢɪɴ* : ${totalCommands}
+*╰━━━━━━━━━━━━━━━━━❍❍➣*
 
-┏━━━━━━━━━━━━━━━━━━━━┓
-┃ 👤 USER : ${m.pushName || 'User'}
-┃ ⚡ PREFIX : ${config.PREFIX}
-┃ 🌐 MODE : ${config.WORK_TYPE || 'public'}
-┃ 📦 COMMANDS : ${totalCommands}
-┃ 🕐 RUNTIME : ${hours}h ${minutes}m ${seconds}s
-┃ 💾 RAM : ${freeMem}GB / ${totalMem}GB
-┃ 🧠 CPU : ${cpuModel}
-┃ 📅 DATE : ${date}
-┃ ⏰ TIME : ${time}
-┗━━━━━━━━━━━━━━━━━━━━┛
+━━━〔 👋 ${greeting} 〕━━━
 
 ╔════〔 ⚙️ BOT SETTINGS 〕════╗
 ┃ 👁️ AUTO VIEW :
@@ -139,14 +130,14 @@ cmd({
 
             menu += `
 
-╔═══〔 ${emoji} ${cat.toUpperCase()} MENU 〕═══╗
+╭────────❒〔 ${emoji} ${cat.toUpperCase()} 〕 ➣
 `;
 
             let count = 1;
 
             for (const c of categories[cat]) {
 
-                menu += `┃ ${String(count).padStart(2, '0')} ✦ ${config.PREFIX}${c.pattern}`;
+                menu += `│➣│▸ ${String(count).padStart(2, '0')} ✦ ${config.PREFIX}${c.pattern}`;
 
                 if (c.desc) {
                     menu += `\n┃ ➥ ${c.desc}`;
@@ -156,7 +147,7 @@ cmd({
                 count++;
             }
 
-            menu += `╚══════════════════════════╝
+            menu += `╰────────❍─────❍❍➣
 `;
         }
 
