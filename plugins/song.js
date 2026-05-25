@@ -1,11 +1,20 @@
 const { cmd } = require('../inconnuboy');
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+const ffmpeg = require('fluent-ffmpeg');
+
+//
+// 🎵 YOUTUBE AUDIO DOWNLOAD
+// 🔥 ULTRA FIXED VERSION
+//
 
 cmd({
     pattern: "song",
     alias: ["audio", "mp3", "yta"],
     desc: "Download YouTube audio by name or link",
     category: "download",
+    react: "🎵",
     filename: __filename
 },
 async (conn, mek, m, {
@@ -16,149 +25,347 @@ async (conn, mek, m, {
 
     try {
 
-        // ❌ No Query
-        if (!args[0]) {
-            return reply(
-`╭━━━〔 🎵 YOUTUBE AUDIO 🎵 〕━━━╮
-┃
-┃ 📌 *Example :*
-┃ ➤ .song Faded Alan Walker
-┃ ➤ .mp3 https://youtu.be/xxxx
-┃
-┃ ⚡ Download Fast YouTube MP3
-┃ 🎧 High Quality Audio
-┃
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
+        //
+        // ❌ NO QUERY
+        //
 
-> 👑 POWERED BY BILAL-MD`
-            );
+        if (!args[0]) {
+
+            return reply(`
+╭━━━〔 🎵 YOUTUBE AUDIO 〕━━━⬣
+┃ ❌ Please Provide Song Name
+┃ Or YouTube Link
+┃
+┃ 📌 Example :
+┃ .song Faded Alan Walker
+┃ .mp3 https://youtu.be/xxxx
+┃
+┃ 🎧 High Quality Audio
+┃ ⚡ Fast Download System
+╰━━━━━━━━━━━━━━━━━━━━⬣
+
+> 💎 HOSTIFY AI MINI
+`);
         }
 
-        const query = args.join(" ");
-        const start = Date.now();
+        //
+        // QUERY
+        //
 
-        // 🎵 React
+        const query =
+            args.join(" ");
+
+        const start =
+            Date.now();
+
+        //
+        // REACT
+        //
+
         await conn.sendMessage(from, {
             react: {
-                text: "🎵",
+                text: "⏳",
                 key: mek.key
             }
         });
 
+        //
+        // CHECK URL
+        //
+
         let videoUrl = query;
 
-        // 🔍 Search YouTube If Not URL
-        if (
-            !query.includes("youtube.com") &&
-            !query.includes("youtu.be")
-        ) {
+        const isUrl =
+
+            query.includes("youtube.com") ||
+            query.includes("youtu.be");
+
+        //
+        // 🔍 SEARCH YOUTUBE
+        //
+
+        if (!isUrl) {
 
             const searchUrl =
-                `https://api.yupra.my.id/api/search/youtube?q=${encodeURIComponent(query)}`;
+                `https://api.hostify.indevs.in/api/search/youtube?q=${encodeURIComponent(query)}`;
 
-            const searchRes = await axios.get(searchUrl);
+            const searchRes =
+                await axios.get(searchUrl);
 
-            if (
-                !searchRes.data ||
-                !searchRes.data.status ||
-                !searchRes.data.results ||
-                searchRes.data.results.length === 0
-            ) {
-                return reply("❌ *Audio Not Found!*");
+            const results =
+                searchRes.data?.result ||
+                searchRes.data?.results ||
+                [];
+
+            //
+            // NO RESULT
+            //
+
+            if (!results.length) {
+
+                return reply(`
+╭━━━〔 ❌ NOT FOUND 〕━━━⬣
+┃ No Song Found
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`);
             }
 
-            // ✅ First video
-            videoUrl = searchRes.data.results[0].url;
+            //
+            // FIRST VIDEO
+            //
+
+            videoUrl =
+                results[0].url ||
+                results[0].link;
         }
 
-        // 🎵 Get MP3 Download Link
-        const apiRes = await axios.post(
-            "https://api.hostify.indevs.in/api/downloader/ytmp3",
-            {
-                url: videoUrl
-            },
-            {
-                headers: {
-                    "Content-Type": "application/json"
+        //
+        // 🎵 DOWNLOAD MP3
+        //
+
+        const apiRes =
+            await axios.post(
+                'https://api.hostify.indevs.in/api/downloader/ytmp3',
+                {
+                    url: videoUrl
                 },
-                timeout: 30000
-            }
+                {
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+                    timeout: 60000
+                }
+            );
+
+        const data =
+            apiRes.data;
+
+        //
+        // DEBUG
+        //
+
+        console.log(
+            JSON.stringify(data, null, 2)
         );
 
-        const data = apiRes.data;
+        //
+        // SAFE RESULT
+        //
 
-        // Debug logs
-        console.log("YT API Response:", data);
+        const result =
+            data?.result ||
+            data?.data ||
+            {};
 
-        // ❌ Error Check
-        if (
-            !data ||
-            !data.success ||
-            !data.result ||
-            !data.result.download_url
-        ) {
-            return reply("❌ *Failed To Download Audio!*");
-        }
-
-        const title =
-            data.result.title || "YouTube Audio";
+        //
+        // AUDIO URL
+        //
 
         const audioUrl =
-            data.result.download_url;
 
-        const speed =
-            ((Date.now() - start) / 1000).toFixed(2);
+            result.download_url ||
+            result.audio ||
+            result.mp3 ||
+            result.url;
 
-        // 📢 Info Message
-        await reply(
-`╭━━━〔 🎧 YT AUDIO INFO 🎧 〕━━━╮
-┃
-┃ 🎼 *Title :*
-┃ ${title}
-┃
-┃ ⚡ *Status :* Uploading...
-┃ 🚀 *Speed :* ${speed}s
-┃
-╰━━━━━━━━━━━━━━━━━━━━━╯
+        //
+        // TITLE
+        //
 
-> 👑 FREE WHATSBOT MINI 👑`
+        const title =
+
+            result.title ||
+            'YouTube Audio';
+
+        //
+        // THUMBNAIL
+        //
+
+        const thumbnail =
+
+            result.thumbnail ||
+            result.thumb ||
+            result.image;
+
+        //
+        // CHECK AUDIO
+        //
+
+        if (!audioUrl) {
+
+            return reply(`
+╭━━━〔 ❌ DOWNLOAD FAILED 〕━━━⬣
+┃ Unable To Download Audio
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`);
+        }
+
+        //
+        // 📥 DOWNLOAD AUDIO BUFFER
+        //
+
+        const audioBuffer =
+            (
+                await axios.get(
+                    audioUrl,
+                    {
+                        responseType:
+                            'arraybuffer'
+                    }
+                )
+            ).data;
+
+        //
+        // TEMP FILES
+        //
+
+        const inputPath =
+            path.join(
+                __dirname,
+                `${Date.now()}.mp3`
+            );
+
+        const outputPath =
+            path.join(
+                __dirname,
+                `${Date.now()}.ogg`
+            );
+
+        //
+        // SAVE MP3
+        //
+
+        fs.writeFileSync(
+            inputPath,
+            audioBuffer
         );
 
-        // ✅ Send Audio Properly
+        //
+        // 🔥 CONVERT TO OGG OPUS
+        //
+
+        await new Promise(
+            (resolve, reject) => {
+
+                ffmpeg(inputPath)
+
+                    .audioCodec('libopus')
+
+                    .format('ogg')
+
+                    .save(outputPath)
+
+                    .on(
+                        'end',
+                        resolve
+                    )
+
+                    .on(
+                        'error',
+                        reject
+                    );
+            }
+        );
+
+        //
+        // ⏱️ SPEED
+        //
+
+        const speed =
+            (
+                (
+                    Date.now() - start
+                ) / 1000
+            ).toFixed(2);
+
+        //
+        // 📢 INFO MESSAGE
+        //
+
+        if (thumbnail) {
+
+            await conn.sendMessage(
+                from,
+                {
+                    image: {
+                        url: thumbnail
+                    },
+
+                    caption: `
+╭━━━〔 🎵 AUDIO INFO 〕━━━⬣
+┃ 🎼 Title :
+┃ ${title}
+┃
+┃ ⚡ Speed :
+┃ ${speed}s
+┃
+┃ 🚀 Uploading Audio...
+╰━━━━━━━━━━━━━━━━━━━━⬣
+
+> 💎 HOSTIFY AI MINI
+`
+                },
+                { quoted: mek }
+            );
+        }
+
+        //
+        // 🎧 SEND AUDIO
+        //
+
         await conn.sendMessage(
             from,
             {
-                audio: {
-                    url: audioUrl
-                },
-                mimetype: "audio/mp4",
-                fileName: `${title}.mp3`,
-                ptt: false
+                audio:
+                    fs.readFileSync(
+                        outputPath
+                    ),
+
+                mimetype:
+                    'audio/ogg; codecs=opus',
+
+                ptt: false,
+
+                fileName:
+                    `${title}.ogg`
             },
             {
                 quoted: mek
             }
         );
 
-        // ✅ Success React
+        //
+        // 🧹 DELETE TEMP FILES
+        //
+
+        fs.unlinkSync(inputPath);
+
+        fs.unlinkSync(outputPath);
+
+        //
+        // ✅ SUCCESS REACTION
+        //
+
         await conn.sendMessage(from, {
             react: {
-                text: "✅",
+                text: '✅',
                 key: mek.key
             }
         });
 
     } catch (err) {
 
-        console.error("Song Error:", err);
-
-        reply(
-`╭━━━〔 ❌ ERROR ❌ 〕━━━╮
-┃
-┃ 😔 Failed To Download Audio
-┃ 🔄 Please Try Again Later
-┃
-╰━━━━━━━━━━━━━━━━━╯`
+        console.error(
+            'SONG ERROR:',
+            err
         );
+
+        reply(`
+╭━━━〔 ❌ ERROR 〕━━━⬣
+┃ Failed To Download Audio
+┃ Please Try Again Later
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`);
     }
 });
