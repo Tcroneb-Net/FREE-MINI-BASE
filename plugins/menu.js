@@ -257,11 +257,11 @@ async (conn, mek, m, {
 
         menu += `
 
-╭━━━━━━━━━━━━━━━━━━━━⬣
+╭━━━━━━━━━━━━━━━⬣
 ┃ 💎 HOSTIFY AI MINI
 ┃ 🌐 whatsbot.hostify.co.zw
 ┃ 🚀 Fast • Clean • Powerful
-╰━━━━━━━━━━━━━━━━━━⬣
+╰━━━━━━━━━━━━━━━━━⬣
 
 > © 2026 HOSTIFY AI MINI
 `;
