@@ -82,7 +82,7 @@ async (conn, m, mek, {
 
         // 📢 Stylish Caption
         const caption =
-`╭─────❒〔 ◆ TIKTOK ◆ 〕➣
+`╭─────❒〔 TIKTOK 〕➣
 ◇
 ◆ 🎞️ *Title :*
 ◇  *${title}*
