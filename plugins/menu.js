@@ -6,168 +6,277 @@ const os = require('os');
 cmd({
     pattern: 'menu',
     alias: ['help', 'cmds', 'commands'],
-    desc: 'Ultra Plus Stylish Menu',
+    desc: 'Clean stylish command menu',
     category: 'general',
     react: '📋'
-}, async (conn, mek, m, { from, sender, reply }) => {
+},
+async (conn, mek, m, {
+    from,
+    sender,
+    reply
+}) => {
 
     try {
 
-        const number = sender.split('@')[0];
-        const userConfig = await getUserConfigFromMongoDB(number);
+        //
+        // USER
+        //
 
-        // Group Commands
+        const number =
+            sender.split('@')[0];
+
+        const userConfig =
+            await getUserConfigFromMongoDB(number);
+
+        //
+        // GROUP COMMANDS
+        //
+
         const categories = {};
 
         for (const command of commands) {
 
-            if (command.dontAddCommandList) continue;
+            if (command.dontAddCommandList)
+                continue;
 
-            const cat = (command.category || 'misc').toLowerCase();
+            const cat =
+                (command.category || 'misc')
+                .toLowerCase();
 
-            if (!categories[cat]) categories[cat] = [];
+            if (!categories[cat]) {
+
+                categories[cat] = [];
+            }
 
             categories[cat].push(command);
         }
 
-        // Category Emojis
+        //
+        // EMOJIS
+        //
+
         const categoryEmojis = {
+
             general: '🌐',
             group: '👥',
             settings: '⚙️',
             owner: '👑',
             tools: '🛠️',
+            downloader: '📥',
+            search: '🔎',
+            ai: '🤖',
             fun: '🎭',
             media: '🎬',
             misc: '📦'
         };
 
-        // Runtime
-        const runtime = process.uptime();
+        //
+        // RUNTIME
+        //
 
-        const hours = Math.floor(runtime / 3600);
-        const minutes = Math.floor((runtime % 3600) / 60);
-        const seconds = Math.floor(runtime % 60);
+        const runtime =
+            process.uptime();
 
-        // RAM
-        const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
-        const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
+        const hours =
+            Math.floor(runtime / 3600);
 
-        // CPU
-        const cpuModel = os.cpus()[0].model;
+        const minutes =
+            Math.floor(
+                (runtime % 3600) / 60
+            );
 
-        // Total Commands
-        const totalCommands = commands.filter(c => !c.dontAddCommandList).length;
+        const seconds =
+            Math.floor(runtime % 60);
 
-        // Date & Time
-        const now = new Date();
+        //
+        // MEMORY
+        //
 
-        const date = now.toLocaleDateString();
-        const time = now.toLocaleTimeString();
+        const totalMem =
+            (
+                os.totalmem() /
+                1024 /
+                1024 /
+                1024
+            ).toFixed(2);
 
-        // Greeting
-        const hour = now.getHours();
+        const freeMem =
+            (
+                os.freemem() /
+                1024 /
+                1024 /
+                1024
+            ).toFixed(2);
 
-        let greeting = '🌙 Good Night';
+        //
+        // TOTAL COMMANDS
+        //
 
-        if (hour >= 5 && hour < 12) greeting = '🌅 Good Morning';
-        else if (hour >= 12 && hour < 17) greeting = '☀️ Good Afternoon';
-        else if (hour >= 17 && hour < 21) greeting = '🌇 Good Evening';
+        const totalCommands =
+            commands.filter(
+                cmd =>
+                    !cmd.dontAddCommandList
+            ).length;
 
-        // Menu Start
+        //
+        // SETTINGS
+        //
+
+        const autoView =
+            userConfig.AUTO_VIEW_STATUS === 'true'
+                ? 'ON ✅'
+                : 'OFF ❌';
+
+        const antiCall =
+            userConfig.ANTI_CALL === 'true'
+                ? 'ON ✅'
+                : 'OFF ❌';
+
+        const autoRecord =
+            userConfig.AUTO_RECORDING === 'true'
+                ? 'ON ✅'
+                : 'OFF ❌';
+
+        const autoTyping =
+            userConfig.AUTO_TYPING === 'true'
+                ? 'ON ✅'
+                : 'OFF ❌';
+
+        const autoRead =
+            userConfig.READ_MESSAGE === 'true'
+                ? 'ON ✅'
+                : 'OFF ❌';
+
+        //
+        // DATE
+        //
+
+        const date =
+            new Date().toLocaleDateString();
+
+        const time =
+            new Date().toLocaleTimeString();
+
+        //
+        // HEADER
+        //
+
         let menu = `
-*╭━━━ 〔 𝚃𝙲𝚁𝙾𝙽𝙴𝙱 𝚇𝙼𝙳 𝙿𝙻𝚄𝚂〕━━━┈⊷*
-*┃➣* *ᴜsᴇʀ* : ${m.pushName || 'User'}
-*┃➣* *ʀᴜɴᴛɪᴍᴇ* : ${hours}h ${minutes}m ${seconds}s
-*┃➣* *ᴍᴏᴅᴇ* : ${config.WORK_TYPE || 'public'}}
-*┃➣* *ᴘʀᴇғɪx* : [ ${config.PREFIX} ]
-*┃➣* *ᴩʟᴜɢɪɴ* : ${totalCommands}
-*╰━━━━━━━━━━━━━━━━━❍❍➣*
+╭━━━〔 🤖 HOSTIFY AI MINI 〕━━━⬣
+┃ 👤 User : ${m.pushName || 'User'}
+┃ ⚡ Prefix : ${config.PREFIX}
+┃ 🌐 Mode : ${config.WORK_TYPE || 'public'}
+┃ 📦 Commands : ${totalCommands}
+┃ 🕒 Runtime : ${hours}h ${minutes}m ${seconds}s
+┃ 💾 RAM : ${freeMem}GB / ${totalMem}GB
+┃ 📅 Date : ${date}
+┃ ⏰ Time : ${time}
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
-━━━〔 👋 ${greeting} 〕━━━
-
-╔════〔 ⚙️ BOT SETTINGS 〕════╗
-┃ 👁️ AUTO VIEW :
-┃ ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃
-┃ 📵 ANTI CALL :
-┃ ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃
-┃ 🎙️ AUTO RECORD :
-┃ ${userConfig.AUTO_RECORDING === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃
-┃ ⌨️ AUTO TYPING :
-┃ ${userConfig.AUTO_TYPING === 'true' ? 'ON ✅' : 'OFF ❌'}
-┃
-┃ ✅ AUTO READ :
-┃ ${userConfig.READ_MESSAGE === 'true' ? 'ON ✅' : 'OFF ❌'}
-╚══════════════════════════╝
+╭━━━〔 ⚙️ SETTINGS 〕━━━⬣
+┃ 👁️ Auto View   : ${autoView}
+┃ 📵 Anti Call   : ${antiCall}
+┃ 🎙️ Auto Record : ${autoRecord}
+┃ ⌨️ Auto Typing : ${autoTyping}
+┃ ✅ Auto Read   : ${autoRead}
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `;
 
-        // Category Order
+        //
+        // CATEGORY ORDER
+        //
+
         const catOrder = [
+
             'general',
             'group',
             'settings',
             'owner',
             'tools',
+            'downloader',
+            'search',
+            'ai',
             'fun',
             'media',
             'misc'
         ];
 
         const sortedCats = [
-            ...catOrder.filter(c => categories[c]),
-            ...Object.keys(categories).filter(c => !catOrder.includes(c))
+
+            ...catOrder.filter(
+                c => categories[c]
+            ),
+
+            ...Object.keys(categories)
+            .filter(
+                c =>
+                    !catOrder.includes(c)
+            )
         ];
 
-        // Categories
+        //
+        // COMMAND LIST
+        //
+
         for (const cat of sortedCats) {
 
-            if (!categories[cat]?.length) continue;
+            if (
+                !categories[cat] ||
+                !categories[cat].length
+            ) continue;
 
-            const emoji = categoryEmojis[cat] || '📦';
+            const emoji =
+                categoryEmojis[cat] || '📦';
 
             menu += `
 
-╭────────❒〔 ${emoji} ${cat.toUpperCase()} 〕 ➣
+╭━━━〔 ${emoji} ${cat.toUpperCase()} 〕━━━⬣
 `;
 
             let count = 1;
 
             for (const c of categories[cat]) {
 
-                menu += `│➣│▸ ${String(count).padStart(2, '0')} ✦ ${config.PREFIX}${c.pattern}`;
+                menu +=
+`┃ ${String(count).padStart(2, '0')} │ ${config.PREFIX}${c.pattern}
+┃ ➥ ${c.desc || 'No description'}
+┃
+`;
 
-                if (c.desc) {
-                    menu += `\n┃ ➥ ${c.desc}`;
-                }
-
-                menu += `\n┃`;
                 count++;
             }
 
-            menu += `╰────────❍─────❍❍➣
+            menu +=
+`╰━━━━━━━━━━━━━━━━━━━━⬣
 `;
         }
 
-        // Footer
+        //
+        // FOOTER
+        //
+
         menu += `
 
-╭━〔 💎 HOSTIFY OFFICIAL 〕━⬣
+╭━━━━━━━━━━━━━━━━━━━━⬣
+┃ 💎 HOSTIFY AI MINI
 ┃ 🌐 whatsbot.hostify.co.zw
-┃ 🚀 FAST • SMART • POWERFUL
-┃ ❤️ THANK YOU FOR USING
+┃ 🚀 Fast • Clean • Powerful
 ╰━━━━━━━━━━━━━━━━━━━━⬣
 
 > © 2026 HOSTIFY AI MINI
 `;
 
-        // Send Message
+        //
+        // SEND
+        //
+
         await conn.sendMessage(
             from,
             {
-                image: { url: config.IMAGE_PATH },
+                image: {
+                    url: config.IMAGE_PATH
+                },
+
                 caption: menu
             },
             { quoted: mek }
@@ -175,6 +284,12 @@ cmd({
 
     } catch (e) {
 
-        reply(`❌ MENU ERROR : ${e.message}`);
+        console.log(e);
+
+        reply(`
+╭━━━〔 ❌ MENU ERROR 〕━━━⬣
+┃ ${e.message}
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`);
     }
 });
