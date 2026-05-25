@@ -1,4 +1,4 @@
-const { cmd } = require("../command");
+const { cmd } = require("../inconnuboy");
 const getFBInfo = require("@xaviabot/fb-downloader");
 const config = require("../config");
 const fs = require("fs");
@@ -13,11 +13,11 @@ const quotedContact = {
   },
   message: {
     contactMessage: {
-      displayName: "POP KIDS VERIFIED ✅",
+      displayName: "HOSTIFY AI VERIFIED ✅",
       vcard: `BEGIN:VCARD
 VERSION:3.0
-FN:POP KIDS VERIFIED ✅
-ORG:POP KIDS BOT;
+FN:HOSTIFY AI  VERIFIED ✅
+ORG:HOSTIFY AI BOT;
 TEL;type=CELL;type=VOICE;waid=${config.OWNER_NUMBER || '0000000000'}:+${config.OWNER_NUMBER || '0000000000'}
 END:VCARD`
     }
@@ -70,8 +70,8 @@ async (conn, mek, m, { from, q, reply }) => {
                 forwardingScore: 999,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                    newsletterJid: "120363289379419860@newsletter",
-                    newsletterName: "𝐩𝐨𝐩𝐤𝐢𝐝",
+                    newsletterJid: "120363289379460@newsletter",
+                    newsletterName: "hostify",
                     serverMessageId: Math.floor(100000 + Math.random() * 900000),
                 }
             }
