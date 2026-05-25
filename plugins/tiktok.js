@@ -20,7 +20,7 @@ async (conn, m, mek, {
         // ❌ No URL
         if (!args[0]) {
             return reply(
-`╭━━━〔 🎬 TIKTOK DOWNLOADER 🎬 〕━━━╮
+`╭────────❒〔 🎬 TIKTOK DOWNLOADER 🎬 〕➣
 ┃
 ┃ 📌 *Example :*
 ┃ ➤ .tiktok https://vt.tiktok.com/xxxx
@@ -29,7 +29,7 @@ async (conn, m, mek, {
 ┃ 💎 No Watermark
 ┃ 🚀 Fast Download Speed
 ┃
-╰━━━━━━━━━━━━━━━━━━━━━━━━╯
+╰────────❍─────❍❍➣
 
 > 👑 POWERED BY INCONNU-BOY`
             );
@@ -82,19 +82,17 @@ async (conn, m, mek, {
 
         // 📢 Stylish Caption
         const caption =
-`╭━━━〔 🎬 TIKTOK DOWNLOADER 🎬 〕━━━╮
+`╭────────❒〔 🎬 TIKTOK DOWNLOADER 🎬 〕➣
 ┃
 ┃ 🎞️ *Title :*
 ┃ ${title}
-┃
+
 ┃ 👤 *Author :* ${author}
 ┃ ⏱️ *Duration :* ${duration}
 ┃ ⚡ *Speed :* ${speed}s
 ┃ 💎 *Quality :* HD
 ┃ 🚫 *Watermark :* No
-┃
-╰━━━━━━━━━━━━━━━━━━━━━━━━╯
-
+╰────────❍─────❍❍➣
 > 👑 FREE WHATSBOT MINI 👑`;
 
         // 🎥 Send Video
@@ -122,12 +120,12 @@ async (conn, m, mek, {
 
         // ❌ Error Message
         reply(
-`╭━━━〔 ❌ ERROR ❌ 〕━━━╮
+`╭────────❒〔 ❌ ERROR ❌ 〕➣
 ┃
 ┃ 😔 Error While Downloading
 ┃ 🔄 Please Try Again Later
 ┃
-╰━━━━━━━━━━━━━━━━━━╯`
+╰────────❍─────❍❍➣`
         );
     }
 });
