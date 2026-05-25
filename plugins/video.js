@@ -3,65 +3,97 @@ const axios = require('axios');
 
 cmd({
     pattern: "video",
-    desc: "Download video from YouTube by name or link",
-    category: "main",
-    react: "♥️",
+    alias: ["ytv", "ytmp4", "vd"],
+    desc: "Download high-quality video from YouTube (Search or Link)",
+    category: "download",
+    react: "🎥",
     filename: __filename
 }, async (conn, m, mek, { from, args, reply }) => {
     try {
+        // 1. Input Validation
         if (!args[0]) {
-            return reply("*AP NE KOI YOUTUBE VIDEO DOWNLOAD KARNI HAI 🤔*\n*TO AP ESE LIKHO 😊*\n\n*.VIDEO ❮VIDEO NAME❯* \n\n*JAB AP ESE LIKHO GE 🤗 TO APKI YOUTUBE VIDEO DOWNLOAD KAR KE 😃 YAHA PER BHEJ DE JAYE GE 😍♥️*");
+            return reply(
+                `*❌ Invalid Usage*\n\n` +
+                `Please provide a YouTube link or video name.\n\n` +
+                `*Example 1 (Link):*\n.video https://youtu.be/xyz\n\n` +
+                `*Example 2 (Search):*\n.video Naruto AMV`
+            );
         }
 
         const query = args.join(" ");
-        const start = Date.now();
-
-        await conn.sendMessage(from, { react: { text: "🤗", key: mek.key } });
-
         let videoUrl = query;
 
-        // If it's NOT a YouTube link, search first using Yupra search
+        // 2. React to show activity
+        await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
+
+        // 3. Search if not a direct link
         if (!query.includes("youtube.com") && !query.includes("youtu.be")) {
-            const searchUrl = `https://api.yupra.my.id/api/search/youtube?q=${encodeURIComponent(query)}`;
-            const searchRes = await axios.get(searchUrl);
+            await reply(`*🔍 Searching for:* "${query}"...`);
+            
+            try {
+                const searchApi = `https://api.yupra.my.id/api/search/youtube?q=${encodeURIComponent(query)}`;
+                const { data: searchData } = await axios.get(searchApi);
 
-            if (!searchRes.data.status || !searchRes.data.results || searchRes.data.results.length === 0) {
-                return reply("*APKI YOUTUBE VIDEO NAHI MILI 😔*");
+                if (!searchData.status || !searchData.results || searchData.results.length === 0) {
+                    return reply(`*❌ No results found for:* "${query}"`);
+                }
+
+                // Get the first result's URL
+                videoUrl = searchData.results[0].url;
+            } catch (searchErr) {
+                console.error("Search Error:", searchErr);
+                return reply("*⚠️ Search API failed. Please try a direct link.*");
             }
-
-            // Take first result
-            videoUrl = searchRes.data.results[0].url;
         }
 
-        // Now download using Jawad-Tech YTDL API
-        const apiUrl = `https://jawad-tech.vercel.app/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
-        const { data } = await axios.get(apiUrl);
+        // 4. Fetch Download Info
+        await conn.sendMessage(from, { react: { text: "📥", key: mek.key } });        
+        const downloadApi = `https://jawad-tech.vercel.app/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
+        const { data } = await axios.get(downloadApi);
 
         if (!data.status || !data.result || !data.result.mp4) {
-            return reply("*APKI YOUTUBE VIDEO NAHI MILI 😔*.");
+            return reply("*❌ Failed to process video. The link might be invalid or restricted.*");
         }
 
-        const title = data.result.title || "BILAL-MD YOUTUBE";
-        const videoDownloadUrl = data.result.mp4;
+        const title = data.result.title || "Unknown Video";
+        const thumb = data.result.thumbnail || "";
+        const duration = data.result.duration || "N/A";
+        const videoBufferUrl = data.result.mp4;
 
-        const end = Date.now();
-        const speed = end - start;
-
-        await reply(
-            `*👑 YT VIDEO INFO 👑*\n\n` +
-            `*👑 VIDEO NAME 👑* \n${title}\n\n` +
-            `*DOWNLOADING.....*\n\n` +
-            `*👑 BY :❯ BILAL-MD 👑*`
-        );
+        // 5. Send Info Card with Diamond Style
+        const infoCaption = 
+            `◇----< *VIDEO INFO* >----◇\n` +
+            `|\n` +
+            `| *Title:* ${title}\n` +
+            `| *Duration:* ${duration}\n` +
+            `|\n` +
+            `◇-----------------------◇\n\n` +
+            `_Sending video now..._ 📤`;
 
         await conn.sendMessage(from, {
-            video: { url: videoDownloadUrl },
-            mimetype: "video/mp4",
-            caption: title
+            image: { url: thumb },
+            caption: infoCaption
         }, { quoted: mek });
 
+        // 6. Send the Video with Diamond Style
+        const finalCaption = 
+            `◇----< *DOWNLOAD COMPLETE* >----◇\n` +
+            `|\n` +
+            `| *Title:* ${title}\n` +
+            `|\n` +
+            `◇---------------------------◇\n\n` +
+            `> Powered by HOSTIFY AI MINI 🚀`;
+
+        await conn.sendMessage(from, {
+            video: { url: videoBufferUrl },
+            mimetype: "video/mp4",
+            caption: finalCaption
+        }, { quoted: mek });
+
+        // Final React
+        await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
+
     } catch (err) {
-        console.error(err);
-        reply("APKI VIDEO NAHI MIL RAHI 😔*");
-    }
-});
+        console.error("Video Cmd Error:", err);
+        reply("*⚠️ An unexpected error occurred. Please try again later.*");
+    }});
