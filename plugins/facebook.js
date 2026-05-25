@@ -70,7 +70,7 @@ async (conn, mek, m, { from, q, reply }) => {
                 forwardingScore: 999,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                    newsletterJid: "120363289379460@newsletter",
+                    newsletterJid: "120363424952610118@newsletter",
                     newsletterName: "hostify",
                     serverMessageId: Math.floor(100000 + Math.random() * 900000),
                 }
