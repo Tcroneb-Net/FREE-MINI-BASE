@@ -171,7 +171,7 @@ async (conn, mek, m, {
 ┃ 💾 RAM : ${freeMem}GB / ${totalMem}GB
 ┃ 📅 Date : ${date}
 ┃ ⏰ Time : ${time}
-╰━━━━━━━━━━━━━━━━━━━━⬣
+╰━━━━━━━━━━━━━━━━━⬣
 
 ╭━━━〔 ⚙️ SETTINGS 〕━━━⬣
 ┃ 👁️ Auto View   : ${autoView}
@@ -179,7 +179,7 @@ async (conn, mek, m, {
 ┃ 🎙️ Auto Record : ${autoRecord}
 ┃ ⌨️ Auto Typing : ${autoTyping}
 ┃ ✅ Auto Read   : ${autoRead}
-╰━━━━━━━━━━━━━━━━━━━━⬣
+╰━━━━━━━━━━━━━━⬣
 `;
 
         //
@@ -230,7 +230,7 @@ async (conn, mek, m, {
 
             menu += `
 
-╭━━━〔 ${emoji} ${cat.toUpperCase()} 〕━━━⬣
+╭━━━〔 ${emoji} ${cat.toUpperCase()} 〕━⬣
 `;
 
             let count = 1;
@@ -247,7 +247,7 @@ async (conn, mek, m, {
             }
 
             menu +=
-`╰━━━━━━━━━━━━━━━━━━━━⬣
+`╰━━━━━━━━━━━━━━━━━⬣
 `;
         }
 
@@ -261,7 +261,7 @@ async (conn, mek, m, {
 ┃ 💎 HOSTIFY AI MINI
 ┃ 🌐 whatsbot.hostify.co.zw
 ┃ 🚀 Fast • Clean • Powerful
-╰━━━━━━━━━━━━━━━━━━━━⬣
+╰━━━━━━━━━━━━━━━━━━⬣
 
 > © 2026 HOSTIFY AI MINI
 `;
@@ -289,7 +289,7 @@ async (conn, mek, m, {
         reply(`
 ╭━━━〔 ❌ MENU ERROR 〕━━━⬣
 ┃ ${e.message}
-╰━━━━━━━━━━━━━━━━━━━━⬣
+╰━━━━━━━━━━━━━━⬣
 `);
     }
 });
