@@ -82,16 +82,16 @@ async (conn, m, mek, {
 
         // 📢 Stylish Caption
         const caption =
-`╭─────❒〔 TIKTOK DOWNLOADER 〕➣
-┃
-┃ 🎞️ *Title :*
-➣  *${title}*
+`╭─────❒〔 ◆ TIKTOK ◆ 〕➣
+◇
+◆ 🎞️ *Title :*
+◇  *${title}*
 
-┃ 👤 *Author :* ${author}
-┃ ⏱️ *Duration :* ${duration}
-┃ ⚡ *Speed :* ${speed}s
-┃ 💎 *Quality :* HD
-┃ 🚫 *Watermark :* No
+◆ 👤 *Author :* ${author}
+◇ ⏱️ *Duration :* ${duration}
+◆ ⚡ *Speed :* ${speed}s
+◇ 💎 *Quality :* HD
+◆ 🚫 *Watermark :* No
 ╰────────❍─────❍❍➣
 > 👑 FREE WHATSBOT MINI 👑`;
 
