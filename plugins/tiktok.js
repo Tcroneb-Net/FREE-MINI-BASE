@@ -20,7 +20,7 @@ async (conn, m, mek, {
         // ❌ No URL
         if (!args[0]) {
             return reply(
-`╭────────❒〔 🎬 TIKTOK DOWNLOADER 🎬 〕➣
+`╭───❒〔 🎬 TIKTOK DOWNLOADER 🎬 〕➣
 ┃
 ┃ 📌 *Example :*
 ┃ ➤ .tiktok https://vt.tiktok.com/xxxx
@@ -31,7 +31,7 @@ async (conn, m, mek, {
 ┃
 ╰────────❍─────❍❍➣
 
-> 👑 POWERED BY INCONNU-BOY`
+> 👑 POWERED BY WOT TEAM`
             );
         }
 
@@ -55,12 +55,12 @@ async (conn, m, mek, {
         // ❌ Invalid Response
         if (!data.status || !data.result) {
             return reply(
-`╭━━━〔 ❌ FAILED ❌ 〕━━━╮
+`╭━━━〔 ❌ FAILED ❌ 〕➣
 ┃
 ┃ 😔 Unable To Download Video
 ┃ 🔄 Try Another TikTok Link
 ┃
-╰━━━━━━━━━━━━━━━━━━╯`
+╰────────❍─────❍❍➣`
             );
         }
 
@@ -82,10 +82,10 @@ async (conn, m, mek, {
 
         // 📢 Stylish Caption
         const caption =
-`╭────────❒〔 🎬 TIKTOK DOWNLOADER 🎬 〕➣
+`╭─────❒〔 TIKTOK DOWNLOADER 〕➣
 ┃
 ┃ 🎞️ *Title :*
-┃ ${title}
+➣  *${title}*
 
 ┃ 👤 *Author :* ${author}
 ┃ ⏱️ *Duration :* ${duration}
