@@ -5,12 +5,10 @@ const {
     updateUserConfigInMongoDB
 } = require('../lib/database');
 
-const {
-    downloadContentFromMessage
-} = require('@whiskeysockets/baileys');
-
 //
-// ⚡ SAFE TOGGLE SYSTEM
+// ╔══════════════════════════════╗
+// ║       SETTINGS SYSTEM        ║
+// ╚══════════════════════════════╝
 //
 
 async function toggleSetting({
@@ -25,49 +23,66 @@ async function toggleSetting({
 
     try {
 
-        const number = sender.split('@')[0];
+        const number =
+            sender.split('@')[0];
 
         let userConfig =
             await getUserConfigFromMongoDB(number);
 
-        if (!userConfig || typeof userConfig !== 'object') {
+        if (
+            !userConfig ||
+            typeof userConfig !== 'object'
+        ) {
+
             userConfig = {};
         }
 
         const current =
             userConfig[key] === 'true';
 
-        // STATUS
+        //
+        // SHOW STATUS
+        //
+
         if (!action) {
 
             return reply(`
-╔══〔 ⚙️ ${title.toUpperCase()} 〕═╗
+╭━━━〔 ⚙️ ${title.toUpperCase()} 〕━━━⬣
 ┃ STATUS : ${current ? 'ON ✅' : 'OFF ❌'}
 ┃
 ┃ USAGE :
 ┃ .${key.toLowerCase()} on
 ┃ .${key.toLowerCase()} off
-╚════════════════════════╝
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `);
         }
 
-        const input = action.toLowerCase();
+        const input =
+            action.toLowerCase();
 
-        if (!['on', 'off'].includes(input)) {
+        if (
+            !['on', 'off']
+            .includes(input)
+        ) {
 
             return reply(`
-❌ INVALID OPTION
-
-Example:
-.${key.toLowerCase()} on
-.${key.toLowerCase()} off
+╭━━━〔 ❌ INVALID OPTION 〕━━━⬣
+┃ Example :
+┃ .${key.toLowerCase()} on
+┃ .${key.toLowerCase()} off
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `);
         }
 
+        //
         // SAVE
-        const newValue = input === 'on';
+        //
 
-        userConfig[key] = String(newValue);
+        const newValue =
+            input === 'on';
+
+        userConfig[key] =
+            String(newValue);
 
         await updateUserConfigInMongoDB(
             number,
@@ -84,7 +99,11 @@ Example:
 
         console.log(e);
 
-        reply(`❌ ERROR\n${e.message}`);
+        reply(`
+╭━━━〔 ❌ ERROR 〕━━━⬣
+┃ ${e.message}
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`);
     }
 }
 
@@ -94,9 +113,16 @@ Example:
 
 cmd({
     pattern: 'autoviewstatus',
-    alias: ['autoview', 'autostatus'],
-    desc: 'Auto view WhatsApp statuses',
+
+    alias: [
+        'autoview',
+        'autostatus'
+    ],
+
+    desc: 'Auto view statuses',
+
     category: 'settings',
+
     react: '👁️'
 },
 async (conn, mek, m, {
@@ -107,40 +133,56 @@ async (conn, mek, m, {
 }) => {
 
     if (!isOwner) {
+
         return reply('❌ OWNER ONLY');
     }
 
     await toggleSetting({
+
         sender,
-        key: 'AUTO_VIEW_STATUS',
-        action: args[0],
+
+        key:
+            'AUTO_VIEW_STATUS',
+
+        action:
+            args[0],
+
         reply,
-        title: 'Auto View Status',
+
+        title:
+            'Auto View Status',
 
         enableText: `
-╔═══〔 👁️ AUTO VIEW STATUS 〕═══╗
+╭━━━〔 👁️ AUTO VIEW STATUS 〕━━━⬣
 ┃ ✅ ENABLED
 ┃ Bot Will Auto View Status
-╚═══════════════════════╝
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `,
 
         disableText: `
-╔═══〔 👁️ AUTO VIEW STATUS 〕═══╗
+╭━━━〔 👁️ AUTO VIEW STATUS 〕━━━⬣
 ┃ ❌ DISABLED
-╚═══════════════════════╝
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `
     });
 });
 
 //
-// 😍 AUTO STATUS REACT
+// 😍 AUTO LIKE STATUS
 //
 
 cmd({
-    pattern: 'autoreactstatus',
-    alias: ['statusreact', 'autostatusreact'],
+    pattern: 'autolikestatus',
+
+    alias: [
+        'autolike',
+        'statuslike'
+    ],
+
     desc: 'Auto react to statuses',
+
     category: 'settings',
+
     react: '😍'
 },
 async (conn, mek, m, {
@@ -151,40 +193,56 @@ async (conn, mek, m, {
 }) => {
 
     if (!isOwner) {
+
         return reply('❌ OWNER ONLY');
     }
 
     await toggleSetting({
+
         sender,
-        key: 'AUTO_STATUS_REACT',
-        action: args[0],
+
+        key:
+            'AUTO_LIKE_STATUS',
+
+        action:
+            args[0],
+
         reply,
-        title: 'Auto Status React',
+
+        title:
+            'Auto Like Status',
 
         enableText: `
-╔═══〔 😍 AUTO STATUS REACT 〕═══╗
+╭━━━〔 😍 AUTO LIKE STATUS 〕━━━⬣
 ┃ ✅ ENABLED
 ┃ Bot Will React To Statuses
-╚════════════════════════╝
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `,
 
         disableText: `
-╔═══〔 😍 AUTO STATUS REACT 〕═══╗
+╭━━━〔 😍 AUTO LIKE STATUS 〕━━━⬣
 ┃ ❌ DISABLED
-╚════════════════════════╝
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `
     });
 });
 
 //
-// 😀 SET STATUS REACTION EMOJI
+// 😀 SET AUTO LIKE EMOJIS
 //
 
 cmd({
-    pattern: 'setstatusemoji',
-    alias: ['setreact', 'setemoji'],
-    desc: 'Set auto status reaction emoji',
+    pattern: 'setlikeemoji',
+
+    alias: [
+        'setemoji',
+        'setreactemoji'
+    ],
+
+    desc: 'Set auto status reaction emojis',
+
     category: 'settings',
+
     react: '😀'
 },
 async (conn, mek, m, {
@@ -197,31 +255,40 @@ async (conn, mek, m, {
     try {
 
         if (!isOwner) {
+
             return reply('❌ OWNER ONLY');
         }
 
-        const emoji = args[0];
-
-        if (!emoji) {
+        if (!args[0]) {
 
             return reply(`
-╔═══〔 😀 STATUS EMOJI 〕═══╗
-┃ Example:
-┃ .setstatusemoji ❤️
-╚════════════════════╝
+╭━━━〔 😀 SET STATUS EMOJIS 〕━━━⬣
+┃ Example :
+┃ .setlikeemoji ❤️ 😍 🔥 💎
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `);
         }
 
-        const number = sender.split('@')[0];
+        const number =
+            sender.split('@')[0];
 
         let userConfig =
             await getUserConfigFromMongoDB(number);
 
-        if (!userConfig || typeof userConfig !== 'object') {
+        if (
+            !userConfig ||
+            typeof userConfig !== 'object'
+        ) {
+
             userConfig = {};
         }
 
-        userConfig.STATUS_REACT_EMOJI = emoji;
+        //
+        // SAVE EMOJIS
+        //
+
+        userConfig.AUTO_LIKE_EMOJI =
+            args;
 
         await updateUserConfigInMongoDB(
             number,
@@ -229,17 +296,22 @@ async (conn, mek, m, {
         );
 
         reply(`
-╔═══〔 😀 STATUS EMOJI 〕═══╗
+╭━━━〔 😀 STATUS EMOJIS 〕━━━⬣
 ┃ ✅ SAVED SUCCESSFULLY
-┃ EMOJI : ${emoji}
-╚════════════════════╝
+┃
+┃ ${args.join(' ')}
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `);
 
     } catch (e) {
 
         console.log(e);
 
-        reply(`❌ ERROR\n${e.message}`);
+        reply(`
+╭━━━〔 ❌ ERROR 〕━━━⬣
+┃ ${e.message}
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`);
     }
 });
 
@@ -249,8 +321,15 @@ async (conn, mek, m, {
 
 cmd({
     pattern: 'anticall',
+
+    alias: [
+        'blockcall'
+    ],
+
     desc: 'Reject incoming calls',
+
     category: 'settings',
+
     react: '📵'
 },
 async (conn, mek, m, {
@@ -261,40 +340,56 @@ async (conn, mek, m, {
 }) => {
 
     if (!isOwner) {
+
         return reply('❌ OWNER ONLY');
     }
 
     await toggleSetting({
+
         sender,
-        key: 'ANTI_CALL',
-        action: args[0],
+
+        key:
+            'ANTI_CALL',
+
+        action:
+            args[0],
+
         reply,
-        title: 'Anti Call',
+
+        title:
+            'Anti Call',
 
         enableText: `
-╔═══〔 📵 ANTI CALL 〕═══╗
+╭━━━〔 📵 ANTI CALL 〕━━━⬣
 ┃ ✅ ENABLED
-╚══════════════════╝
+┃ Incoming Calls Will Reject
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `,
 
         disableText: `
-╔═══〔 📵 ANTI CALL 〕═══╗
+╭━━━〔 📵 ANTI CALL 〕━━━⬣
 ┃ ❌ DISABLED
-╚══════════════════╝
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `
     });
 });
 
 //
-// 💎 AUTO VIEWONCE SAVE
+// 🎙️ AUTO RECORDING
 //
 
 cmd({
-    pattern: 'autovv',
-    alias: ['autosavevv'],
-    desc: 'Auto save ViewOnce',
+    pattern: 'autorecording',
+
+    alias: [
+        'autorecord'
+    ],
+
+    desc: 'Show recording presence',
+
     category: 'settings',
-    react: '💎'
+
+    react: '🎙️'
 },
 async (conn, mek, m, {
     sender,
@@ -304,130 +399,175 @@ async (conn, mek, m, {
 }) => {
 
     if (!isOwner) {
+
         return reply('❌ OWNER ONLY');
     }
 
     await toggleSetting({
+
         sender,
-        key: 'AUTO_VIEWONCE_SAVE',
-        action: args[0],
+
+        key:
+            'AUTO_RECORDING',
+
+        action:
+            args[0],
+
         reply,
-        title: 'Auto ViewOnce',
+
+        title:
+            'Auto Recording',
 
         enableText: `
-╔═══〔 💎 AUTO VIEWONCE 〕═══╗
+╭━━━〔 🎙️ AUTO RECORDING 〕━━━⬣
 ┃ ✅ ENABLED
-┃ Media Will Save To Inbox
-╚═════════════════════╝
+┃ Bot Will Show Recording
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `,
 
         disableText: `
-╔═══〔 💎 AUTO VIEWONCE 〕═══╗
+╭━━━〔 🎙️ AUTO RECORDING 〕━━━⬣
 ┃ ❌ DISABLED
-╚═════════════════════╝
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `
     });
 });
 
 //
-// 👁️ VIEWONCE COMMAND
+// ⌨️ AUTO TYPING
 //
 
 cmd({
-    pattern: 'vv',
-    alias: ['viewonce'],
-    desc: 'Reveal ViewOnce',
-    category: 'tools',
-    react: '👁️'
+    pattern: 'autotyping',
+
+    alias: [
+        'autotype'
+    ],
+
+    desc: 'Show typing presence',
+
+    category: 'settings',
+
+    react: '⌨️'
 },
 async (conn, mek, m, {
-    from,
-    reply
+    sender,
+    args,
+    reply,
+    isOwner
 }) => {
 
-    try {
+    if (!isOwner) {
 
-        const quoted =
-            mek.message?.extendedTextMessage
-                ?.contextInfo?.quotedMessage;
-
-        if (!quoted) {
-
-            return reply(`
-╔═══〔 👁️ VIEWONCE TOOL 〕═══╗
-┃ Reply To A ViewOnce Message
-┃ Then Type:
-┃ .vv
-╚═════════════════════╝
-`);
-        }
-
-        // WRAPPER
-        const viewOnce =
-            quoted.viewOnceMessageV2 ||
-            quoted.viewOnceMessageV2Extension ||
-            quoted.viewOnceMessage;
-
-        // MEDIA
-        const media =
-            viewOnce?.message?.imageMessage ||
-            viewOnce?.message?.videoMessage;
-
-        if (!media) {
-            return reply('❌ Not A ViewOnce Message');
-        }
-
-        const isImage =
-            !!viewOnce?.message?.imageMessage;
-
-        const type =
-            isImage ? 'image' : 'video';
-
-        // DOWNLOAD
-        const stream =
-            await downloadContentFromMessage(
-                media,
-                type
-            );
-
-        let buffer = Buffer.from([]);
-
-        for await (const chunk of stream) {
-            buffer = Buffer.concat([
-                buffer,
-                chunk
-            ]);
-        }
-
-        // SEND
-        await conn.sendMessage(
-            from,
-            {
-                [type]: buffer,
-
-                caption:
-                    media.caption ||
-                    '👁️ ViewOnce Opened'
-            },
-            { quoted: mek }
-        );
-
-    } catch (e) {
-
-        console.log(e);
-
-        reply(`❌ ERROR\n${e.message}`);
+        return reply('❌ OWNER ONLY');
     }
+
+    await toggleSetting({
+
+        sender,
+
+        key:
+            'AUTO_TYPING',
+
+        action:
+            args[0],
+
+        reply,
+
+        title:
+            'Auto Typing',
+
+        enableText: `
+╭━━━〔 ⌨️ AUTO TYPING 〕━━━⬣
+┃ ✅ ENABLED
+┃ Bot Will Show Typing
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`,
+
+        disableText: `
+╭━━━〔 ⌨️ AUTO TYPING 〕━━━⬣
+┃ ❌ DISABLED
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`
+    });
 });
 
 //
-// ⚙️ SETTINGS STATUS
+// ✅ AUTO READ
+//
+
+cmd({
+    pattern: 'autoread',
+
+    alias: [
+        'readmessage',
+        'bluetick'
+    ],
+
+    desc: 'Auto read messages',
+
+    category: 'settings',
+
+    react: '✅'
+},
+async (conn, mek, m, {
+    sender,
+    args,
+    reply,
+    isOwner
+}) => {
+
+    if (!isOwner) {
+
+        return reply('❌ OWNER ONLY');
+    }
+
+    await toggleSetting({
+
+        sender,
+
+        key:
+            'READ_MESSAGE',
+
+        action:
+            args[0],
+
+        reply,
+
+        title:
+            'Auto Read',
+
+        enableText: `
+╭━━━〔 ✅ AUTO READ 〕━━━⬣
+┃ ✅ ENABLED
+┃ Messages Will Auto Read
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`,
+
+        disableText: `
+╭━━━〔 ✅ AUTO READ 〕━━━⬣
+┃ ❌ DISABLED
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`
+    });
+});
+
+//
+// ⚙️ SETTINGS PANEL
 //
 
 cmd({
     pattern: 'settings',
-    desc: 'View settings status',
+
+    alias: [
+        'setting',
+        'config'
+    ],
+
+    desc: 'View bot settings',
+
     category: 'settings',
+
     react: '⚙️'
 },
 async (conn, mek, m, {
@@ -439,43 +579,100 @@ async (conn, mek, m, {
     try {
 
         if (!isOwner) {
+
             return reply('❌ OWNER ONLY');
         }
 
-        const number = sender.split('@')[0];
+        const number =
+            sender.split('@')[0];
 
         let userConfig =
             await getUserConfigFromMongoDB(number);
 
-        if (!userConfig || typeof userConfig !== 'object') {
+        if (
+            !userConfig ||
+            typeof userConfig !== 'object'
+        ) {
+
             userConfig = {};
         }
 
         reply(`
-╔═══〔 ⚙️ BOT SETTINGS 〕═══╗
+╔══════════════════════╗
+║     ⚙️ BOT SETTINGS     ║
+╚══════════════════════╝
 
-┃ 👁️ Auto View :
-┃ ${userConfig.AUTO_VIEW_STATUS === 'true' ? 'ON ✅' : 'OFF ❌'}
+╭━━━〔 👁️ STATUS VIEW 〕━━━⬣
+┃ ${
+    userConfig.AUTO_VIEW_STATUS === 'true'
+        ? 'ON ✅'
+        : 'OFF ❌'
+}
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
-┃ 😍 Auto React :
-┃ ${userConfig.AUTO_STATUS_REACT === 'true' ? 'ON ✅' : 'OFF ❌'}
+╭━━━〔 😍 STATUS LIKE 〕━━━⬣
+┃ ${
+    userConfig.AUTO_LIKE_STATUS === 'true'
+        ? 'ON ✅'
+        : 'OFF ❌'
+}
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
-┃ 😀 React Emoji :
-┃ ${userConfig.STATUS_REACT_EMOJI || '❤️'}
+╭━━━〔 😀 REACTION EMOJIS 〕━━━⬣
+┃ ${
+    Array.isArray(
+        userConfig.AUTO_LIKE_EMOJI
+    )
+        ? userConfig.AUTO_LIKE_EMOJI.join(' ')
+        : '❤️ 🔥 😍'
+}
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
-┃ 📵 Anti Call :
-┃ ${userConfig.ANTI_CALL === 'true' ? 'ON ✅' : 'OFF ❌'}
+╭━━━〔 📵 ANTI CALL 〕━━━⬣
+┃ ${
+    userConfig.ANTI_CALL === 'true'
+        ? 'ON ✅'
+        : 'OFF ❌'
+}
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
-┃ 💎 Auto VV :
-┃ ${userConfig.AUTO_VIEWONCE_SAVE === 'true' ? 'ON ✅' : 'OFF ❌'}
+╭━━━〔 🎙️ AUTO RECORDING 〕━━━⬣
+┃ ${
+    userConfig.AUTO_RECORDING === 'true'
+        ? 'ON ✅'
+        : 'OFF ❌'
+}
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
-╚════════════════════╝
+╭━━━〔 ⌨️ AUTO TYPING 〕━━━⬣
+┃ ${
+    userConfig.AUTO_TYPING === 'true'
+        ? 'ON ✅'
+        : 'OFF ❌'
+}
+╰━━━━━━━━━━━━━━━━━━━━⬣
+
+╭━━━〔 ✅ AUTO READ 〕━━━⬣
+┃ ${
+    userConfig.READ_MESSAGE === 'true'
+        ? 'ON ✅'
+        : 'OFF ❌'
+}
+╰━━━━━━━━━━━━━━━━━━━━⬣
+
+> FREE WHATSBOT MINI
 `);
 
     } catch (e) {
 
         console.log(e);
 
-        reply(`❌ ERROR\n${e.message}`);
+        reply(`
+╭━━━〔 ❌ ERROR 〕━━━⬣
+┃ ${e.message}
+╰━━━━━━━━━━━━━━━━━━━━⬣
+`);
     }
 });
+
+module.exports = {};
