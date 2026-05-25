@@ -45,7 +45,7 @@ cmd({
 
         // 🎵 Download MP3
         const apiUrl =
-            `https://jawad-tech.vercel.app/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
+            `https://apis.davidcyril.name.ng/download/ytv3?url=${encodeURIComponent(video.url)}&format=mp3}`;
 
         const { data } = await axios.get(apiUrl);
 
