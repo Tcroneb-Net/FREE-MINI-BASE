@@ -1,44 +1,53 @@
-const { cmd } = require('../inconnuboy');
+const { cmd } = require('../command');
 const axios = require('axios');
 
 cmd({
     pattern: "song",
     alias: ["audio", "mp3", "yta"],
     desc: "Download YouTube audio by name or link",
-    category: "main",
+    category: "download",
     filename: __filename
-}, async (conn, m, mek, { from, args, reply }) => {
+},
+async (conn, mek, m, {
+    from,
+    args,
+    reply
+}) => {
 
     try {
 
+        // ❌ No Query
         if (!args[0]) {
             return reply(
-`╭━━━〔 🎵 YT AUDIO DOWNLOADER 🎵 〕━━━╮
+`╭━━━〔 🎵 YOUTUBE AUDIO 🎵 〕━━━╮
 ┃
 ┃ 📌 *Example :*
 ┃ ➤ .song Faded Alan Walker
 ┃ ➤ .mp3 https://youtu.be/xxxx
 ┃
-┃ ⚡ Download YouTube Audio Fast
-┃ 🎧 High Quality MP3
+┃ ⚡ Download Fast YouTube MP3
+┃ 🎧 High Quality Audio
 ┃
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-> 👑 whatsbot.hostify.co.zw`
+> 👑 POWERED BY BILAL-MD`
             );
         }
 
         const query = args.join(" ");
         const start = Date.now();
 
-        // React Emoji
+        // 🔥 React
         await conn.sendMessage(from, {
-            react: { text: "🎵", key: mek.key }
+            react: {
+                text: "🎵",
+                key: mek.key
+            }
         });
 
         let videoUrl = query;
 
-        // 🔍 Search YouTube if not URL
+        // 🔍 Search YouTube If Not URL
         if (
             !query.includes("youtube.com") &&
             !query.includes("youtu.be")
@@ -57,10 +66,11 @@ cmd({
                 return reply("❌ *Audio Not Found!*");
             }
 
+            // ✅ First Video
             videoUrl = searchRes.data.results[0].url;
         }
 
-        // 🎵 Download MP3 From New API
+        // 🎵 Get MP3 Download Link
         const apiRes = await axios.post(
             "https://api.hostify.indevs.in/api/downloader/ytmp3",
             {
@@ -75,44 +85,61 @@ cmd({
 
         const data = apiRes.data;
 
-        if (!data.success || !data.result?.download_url) {
+        // ❌ Error Check
+        if (
+            !data.success ||
+            !data.result ||
+            !data.result.download_url
+        ) {
             return reply("❌ *Failed To Download Audio!*");
         }
 
         const title = data.result.title || "YouTube Audio";
         const audioUrl = data.result.download_url;
 
-        const speed = ((Date.now() - start) / 1000).toFixed(2);
+        const speed =
+            ((Date.now() - start) / 1000).toFixed(2);
 
-        // Stylish Info Message
+        // 📢 Info Message
         await reply(
 `╭━━━〔 🎧 YT AUDIO INFO 🎧 〕━━━╮
 ┃
 ┃ 🎼 *Title :*
 ┃ ${title}
 ┃
-┃ ⚡ *Status :* Downloading...
+┃ ⚡ *Status :* Uploading...
 ┃ 🚀 *Speed :* ${speed}s
 ┃
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-> 👑 FREE WHATSBOT MINI👑`
+> 👑 FREE WHATSBOT MINI 👑`
         );
 
-        // Send Audio
+        // ✅ Download Audio Buffer
+        const audioBuffer = await axios.get(audioUrl, {
+            responseType: "arraybuffer"
+        });
+
+        // ✅ Send Audio Properly
         await conn.sendMessage(
             from,
             {
-                audio: { url: audioUrl },
+                audio: Buffer.from(audioBuffer.data),
                 mimetype: "audio/mpeg",
-                fileName: `${title}.mp3`
+                fileName: `${title}.mp3`,
+                ptt: false
             },
-            { quoted: mek }
+            {
+                quoted: mek
+            }
         );
 
-        // Success Reaction
+        // ✅ Success React
         await conn.sendMessage(from, {
-            react: { text: "✅", key: mek.key }
+            react: {
+                text: "✅",
+                key: mek.key
+            }
         });
 
     } catch (err) {
