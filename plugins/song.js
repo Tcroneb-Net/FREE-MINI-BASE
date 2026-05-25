@@ -1,4 +1,4 @@
-const { cmd } = require('../command');
+const { cmd } = require('../inconnuboy');
 const axios = require('axios');
 
 cmd({
@@ -37,7 +37,7 @@ async (conn, mek, m, {
         const query = args.join(" ");
         const start = Date.now();
 
-        // 🔥 React
+        // 🎵 React
         await conn.sendMessage(from, {
             react: {
                 text: "🎵",
@@ -59,6 +59,7 @@ async (conn, mek, m, {
             const searchRes = await axios.get(searchUrl);
 
             if (
+                !searchRes.data ||
                 !searchRes.data.status ||
                 !searchRes.data.results ||
                 searchRes.data.results.length === 0
@@ -66,7 +67,7 @@ async (conn, mek, m, {
                 return reply("❌ *Audio Not Found!*");
             }
 
-            // ✅ First Video
+            // ✅ First video
             videoUrl = searchRes.data.results[0].url;
         }
 
@@ -79,14 +80,19 @@ async (conn, mek, m, {
             {
                 headers: {
                     "Content-Type": "application/json"
-                }
+                },
+                timeout: 30000
             }
         );
 
         const data = apiRes.data;
 
+        // Debug logs
+        console.log("YT API Response:", data);
+
         // ❌ Error Check
         if (
+            !data ||
             !data.success ||
             !data.result ||
             !data.result.download_url
@@ -94,8 +100,11 @@ async (conn, mek, m, {
             return reply("❌ *Failed To Download Audio!*");
         }
 
-        const title = data.result.title || "YouTube Audio";
-        const audioUrl = data.result.download_url;
+        const title =
+            data.result.title || "YouTube Audio";
+
+        const audioUrl =
+            data.result.download_url;
 
         const speed =
             ((Date.now() - start) / 1000).toFixed(2);
@@ -110,22 +119,19 @@ async (conn, mek, m, {
 ┃ ⚡ *Status :* Uploading...
 ┃ 🚀 *Speed :* ${speed}s
 ┃
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
+╰━━━━━━━━━━━━━━━━━━━━━╯
 
 > 👑 FREE WHATSBOT MINI 👑`
         );
-
-        // ✅ Download Audio Buffer
-        const audioBuffer = await axios.get(audioUrl, {
-            responseType: "arraybuffer"
-        });
 
         // ✅ Send Audio Properly
         await conn.sendMessage(
             from,
             {
-                audio: Buffer.from(audioBuffer.data),
-                mimetype: "audio/mpeg",
+                audio: {
+                    url: audioUrl
+                },
+                mimetype: "audio/mp4",
                 fileName: `${title}.mp3`,
                 ptt: false
             },
@@ -144,7 +150,7 @@ async (conn, mek, m, {
 
     } catch (err) {
 
-        console.error(err);
+        console.error("Song Error:", err);
 
         reply(
 `╭━━━〔 ❌ ERROR ❌ 〕━━━╮
@@ -152,7 +158,7 @@ async (conn, mek, m, {
 ┃ 😔 Failed To Download Audio
 ┃ 🔄 Please Try Again Later
 ┃
-╰━━━━━━━━━━━━━━━━━━╯`
+╰━━━━━━━━━━━━━━━━━╯`
         );
     }
 });
