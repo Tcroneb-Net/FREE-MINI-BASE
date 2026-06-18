@@ -196,7 +196,7 @@ After deploying on any platform:
 
 ---
 
-## 💬 Bot Commands
+## Bot Commands
 
 | Command | Description |
 |---|---|
